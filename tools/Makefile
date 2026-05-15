@@ -50,6 +50,7 @@ $(TAP): $(SRC)
 	$(ZXBC) $(SRC) $(ZXFLAGS) -o $(TAP)
 
 run: $(TAP)
+	-pkill -x zesarux 2>/dev/null; sleep 0.5
 	open $(HOME)/Applications/ZEsarUX.app --args $(EMU_ARGS) $(abspath $(TAP))
 
 # ── Test compilation ──────────────────────────────────────────────────────────
@@ -61,9 +62,11 @@ build/test_%.tap: tests/test_%.bas
 
 # ── Test runners ──────────────────────────────────────────────────────────────
 run-test-bird-udg: build/test_bird_udg.tap
+	-pkill -x zesarux 2>/dev/null; sleep 0.5
 	open $(HOME)/Applications/ZEsarUX.app --args $(EMU_ARGS) $(abspath $<)
 
 run-test-title-render: build/test_title_render.tap
+	-pkill -x zesarux 2>/dev/null; sleep 0.5
 	open $(HOME)/Applications/ZEsarUX.app --args $(EMU_ARGS) $(abspath $<)
 
 # ── Distribution ──────────────────────────────────────────────────────────────
