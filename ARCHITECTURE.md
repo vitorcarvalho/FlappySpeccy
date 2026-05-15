@@ -57,12 +57,12 @@
 | `src/screens/title.bas` | ✅ done | `ShowTitle(score)` — splash screen, difficulty 1/2/3 selection, sets `selectedDifficulty` |
 | `assets/sprites/bird_udg.bas` | ✅ done | `LoadBirdUDG()` — POKEs 8 bytes into UDG slot "A" ("SKY" pixel-art glyph) |
 | `src/game/physics.bas` | ✅ done | `InitPhysics()` / `UpdatePhysics(flap%)` — gravity accumulator, velocity clamp, floor/ceiling clamp |
-| `src/game/game.bas` | ✅ done | `RunGame()` — 50 Hz render loop, 25 Hz physics tick, collision, scoring (increments `score` global), HUD update, death flash |
+| `src/game/game.bas` | ✅ done | `RunGame()` — 50 Hz render loop, 25 Hz physics tick, collision, scoring, HUD, sound calls, death jingle |
 | `src/game/pipes.bas` | ✅ done | `InitPipes()` / `UpdatePipes()` — 3-slot array, 2-col-wide pipes, difficulty-driven gap (`pipeGapSize` 10/8/6); `pipeScored(3)` tracks awarded points |
 | `src/game/collision.bas` | ✅ done | `CheckCollision()` — floor sentinel (row ≥ 22) + ATTR-based pipe hit (INK 4 = green) |
 | `src/screens/gameover.bas` | ✅ done | `GetMedalRank(score)` (pure, testable) + `ShowGameOver(score)` — medal display, SPACE to retry |
+| `assets/sounds/sounds.bas` | ✅ done | `SoundFlap()` / `SoundScore()` / `SoundDie()` — BEEP-based 48K sound effects |
 | `assets/sprites/pipe_tiles.bas` | 🔜 planned | Block graphic character selection |
-| `assets/sounds/sounds.bas` | 🔜 planned | Named `BEEP` sequences for events |
 
 ---
 
@@ -163,7 +163,7 @@ spectrum/
 │   │   ├── bird_udg.bas        ✅ LoadBirdUDG() — 8 POKE calls into UDG slot "A"
 │   │   └── pipe_tiles.bas      🔜 Block graphic selection for pipes
 │   └── sounds/
-│       └── sounds.bas          🔜 BEEP sequences
+│       └── sounds.bas          ✅ SoundFlap() / SoundScore() / SoundDie() — BEEP effects
 │
 ├── build/                      ✅ Compiler output (.tap) — gitignored
 ├── dist/                       ✅ Release tape images

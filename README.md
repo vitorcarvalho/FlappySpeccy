@@ -108,6 +108,7 @@ make run-test-physics         # automated — gravity, flap, velocity clamp, flo
 make run-test-pipes           # automated — pipe init state, gap bounds, spawn state
 make run-test-collision       # automated — safe/floor/pipe-hit/pipe-clear assertions
 make run-test-gameover        # automated — medal rank boundary assertions
+make run-test-sound           # automated — sound smoke test (you will hear 3 sounds)
 ```
 
 ### Test catalogue
@@ -121,6 +122,7 @@ make run-test-gameover        # automated — medal rank boundary assertions
 | `run-test-pipes` | `tests/test_pipes.bas` | Fully automated | Pipe init state, gap bounds per difficulty (Easy 2–12, Normal 2–14, Hard 2–16), spawn flag |
 | `run-test-collision` | `tests/test_collision.bas` | Fully automated | Safe position (no hit), floor sentinel (row 22), POKE green attr → hit, restore → no hit |
 | `run-test-gameover` | `tests/test_gameover.bas` | Fully automated | `GetMedalRank`: boundary values 0/9/10/20/30/40/50 → ranks 0/0/1/2/3/4/4 |
+| `run-test-sound` | `tests/test_sound.bas` | Fully automated | `SoundFlap`/`SoundScore`/`SoundDie` each callable without crash (you hear 3 sounds) |
 
 ### Writing a new test
 
@@ -174,7 +176,8 @@ FlappySpeccy/
     ├── test_physics.bas         ← Physics unit test (fully automated)
     ├── test_pipes.bas           ← Pipe init/spawn state test (fully automated)
     ├── test_collision.bas       ← Collision detection test (fully automated)
-    └── test_gameover.bas        ← Medal rank boundary test (fully automated)
+    ├── test_gameover.bas        ← Medal rank boundary test (fully automated)
+    └── test_sound.bas           ← Sound smoke test (fully automated; you hear 3 sounds)
 ```
 
 Full architecture details → [ARCHITECTURE.md](ARCHITECTURE.md)

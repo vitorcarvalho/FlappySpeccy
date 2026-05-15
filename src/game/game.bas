@@ -1,6 +1,6 @@
 ' =============================================================================
 ' src/game/game.bas
-' Core game loop — Phase 6: physics + scrolling pipes + collision + scoring.
+' Core game loop — Phase 7: physics + scrolling pipes + collision + scoring + sound.
 '
 ' Exports:
 '   RunGame()  — runs one game session; returns when Q is pressed or the
@@ -11,6 +11,7 @@
 '   physics.bas   — InitPhysics(), UpdatePhysics(), birdRow, birdVel, birdCol
 '   pipes.bas     — InitPipes(), UpdatePipes(), pipeCol/Active/Scored arrays
 '   collision.bas — CheckCollision() — returns 1 on pipe or floor hit
+'   sounds.bas    — SoundFlap(), SoundScore(), SoundDie()
 '   bird_udg.bas  — CHR$(144) must be loaded by LoadBirdUDG() before RunGame()
 '
 ' Rendering strategy (from ARCHITECTURE.md):
@@ -32,6 +33,7 @@
 #include "pipes.bas"
 #include "collision.bas"
 #include "../screens/gameover.bas"
+#include "../../assets/sounds/sounds.bas"
 
 DIM score AS INTEGER   ' global — main.bas reads this after RunGame() returns
 
@@ -85,6 +87,7 @@ SUB RunGame()
     physTick = 1 - physTick
     IF physTick = 1 THEN
       prevRow = birdRow
+      IF flapPending = 1 THEN SoundFlap()   ' chirp before physics so sound leads the jump
       UpdatePhysics(flapPending)
       flapPending = 0
     END IF
@@ -100,6 +103,7 @@ SUB RunGame()
         pipeScored(i) = 1
         score = score + 1
         PRINT INK 6; BRIGHT 1; PAPER 0; AT 0, 14; score; "  "
+        SoundScore()
       END IF
     NEXT i
 
@@ -113,10 +117,10 @@ SUB RunGame()
 
   LOOP UNTIL gameOver = 1
 
-  ' ── Death flash (skipped on clean Q-quit) ───────────────────────────────────
+  ' ── Death flash + jingle (skipped on clean Q-quit) ─────────────────────────
   IF quitGame = 0 THEN
     PRINT INK 2; BRIGHT 1; FLASH 1; PAPER 0; AT birdRow, birdCol; CHR$(144)
-    PAUSE 25   ' ~0.5 s flash
+    SoundDie()   ' descending sweep ~0.5 s — doubles as the death pause
     FLASH 0
     BRIGHT 0
   END IF

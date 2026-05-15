@@ -1,6 +1,6 @@
 # Next Steps — Implementation Plan
 
-Status: **Phase 6 complete. Scoring, HUD, game-over screen with medals live. Unified test suite covers 6 modules.**
+Status: **Phase 7 complete. BEEP-based sound effects live (flap, score, death jingle). Unified test suite covers 7 modules.**
 
 ---
 
@@ -130,20 +130,26 @@ Status: **Phase 6 complete. Scoring, HUD, game-over screen with medals live. Uni
 
 ---
 
-## Phase 7 — Sound
+## Phase 7 — Sound ✅ DONE
 
-**Goal:** flap sound, death jingle.
+**Goal:** flap sound, score reward, death jingle.
 
-- [ ] Create `assets/sounds/sounds.bas`:
-  ```basic
-  SUB SoundFlap()
-    BEEP 0.02, 880
-  END SUB
+- [x] Created `assets/sounds/sounds.bas`:
+  - `SoundFlap()` — single high chirp (A5 = 21 semitones, 20 ms); plays on each flap.
+  - `SoundScore()` — two-note ascending fanfare (C5→G5, 50 ms each); plays when a pipe is cleared.
+  - `SoundDie()` — descending chromatic sweep (A5 to C3 in steps of 3, ~0.48 s); replaces the old `PAUSE 25` death delay.
+- [x] `src/game/game.bas` — `#include "../../assets/sounds/sounds.bas"`; three call sites integrated:
+  - `SoundFlap()` inside the physTick block when `flapPending = 1` (fires on actual physics frame).
+  - `SoundScore()` inside the scoring loop immediately after score increment.
+  - `SoundDie()` replaces `PAUSE 25` in the death-flash section.
+- [x] `tests/test_sound.bas` — 3 automated smoke assertions (set-flag → call → assert-flag=1 pattern).
+- [x] `tests/test_suite.bas` — option **7 SOUND** added to menu.
+- [x] `make run-test-sound` target added to both Makefiles.
 
-  SUB SoundDie()
-    FOR f = 800 TO 100 STEP -50: BEEP 0.02, f: NEXT f
-  END SUB
-  ```
+> **BEEP note:** ZX Spectrum `BEEP duration, note` takes note in *semitones above middle C* (not Hz).
+> Middle C = 0, A4 = 9, A5 = 21.  The plan's `BEEP 0.02, 880` used frequency notation and has been
+> corrected to semitone values.  See `docs/dev-notes.md` §9 for the `AND`/`BAND` lesson — the same
+> "check the ZX Spectrum ROM convention" discipline applies here.
 
 ---
 
@@ -207,6 +213,7 @@ Status: **Phase 6 complete. Scoring, HUD, game-over screen with medals live. Uni
 | Pipe spawning | `tests/test_pipes.bas` | ✅ done | Fully automated; init state, gap bounds, spawn assertions |
 | Collision accuracy | `tests/test_collision.bas` | ✅ done | Automated: safe/floor/POKE-green/POKE-clear — 4 assertions |
 | Medal ranks | `tests/test_gameover.bas` | ✅ done | Automated: boundary values 0/9/10/20/30/40/50 — 7 assertions |
+| Sound smoke test | `tests/test_sound.bas` | ✅ done | Automated: each BEEP SUB callable without crash — 3 assertions |
 | Full play-through | Manual | 🔜 planned | Load release `.tap`, play to score ≥ 10 |
 
 ---
@@ -224,6 +231,7 @@ make run-test-physics          # run physics test standalone
 make run-test-pipes            # run pipe spawn/state test standalone
 make run-test-collision        # run collision detection test standalone
 make run-test-gameover         # run medal rank test standalone
+make run-test-sound            # run sound smoke test standalone
 make clean                     # remove build artefacts
 zxbc src/game/main.bas -h      # compiler help
 ```
