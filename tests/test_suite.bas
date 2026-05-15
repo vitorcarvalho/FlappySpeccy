@@ -9,6 +9,7 @@
 '   1  Bird UDG       — automated PEEK assertions + UDG visual render
 '   2  Title Render   — semi-automated (press SPACE to advance phase 1)
 '   3  Physics        — automated gravity, flap, clamp assertions
+'   4  Pipes          — automated init and spawn state assertions
 '
 ' #define SUITE_MODE before including test files suppresses their standalone
 ' RunTestXxx() + PAUSE 0 calls, leaving only the SUB definitions.
@@ -23,6 +24,7 @@
 #include "test_bird_udg.bas"
 #include "test_title_render.bas"
 #include "test_physics.bas"
+#include "test_pipes.bas"
 
 ' ── Menu ──────────────────────────────────────────────────────────────────────
 
@@ -33,7 +35,8 @@ SUB ShowMenu()
   PRINT           INK 7; PAPER 0; AT 6, 6; "1  BIRD UDG      (auto)"
   PRINT           INK 7; PAPER 0; AT 8, 6; "2  TITLE RENDER  (semi)"
   PRINT           INK 7; PAPER 0; AT 10,6; "3  PHYSICS       (auto)"
-  PRINT BRIGHT 1; INK 5; PAPER 0; AT 14,4; "PRESS 1-3 TO SELECT TEST"
+  PRINT           INK 7; PAPER 0; AT 12,6; "4  PIPES         (auto)"
+  PRINT BRIGHT 1; INK 5; PAPER 0; AT 16,4; "PRESS 1-4 TO SELECT TEST"
 END SUB
 
 ' ── "back to menu" prompt shown after every test ──────────────────────────────
@@ -58,7 +61,7 @@ DO
   DO
     PAUSE 1
     menuKey = INKEY$
-  LOOP UNTIL menuKey = "1" OR menuKey = "2" OR menuKey = "3"
+  LOOP UNTIL menuKey = "1" OR menuKey = "2" OR menuKey = "3" OR menuKey = "4"
 
   IF menuKey = "1" THEN
     RunTestBirdUDG()
@@ -72,6 +75,11 @@ DO
 
   IF menuKey = "3" THEN
     RunTestPhysics()
+    WaitForMenu()
+  END IF
+
+  IF menuKey = "4" THEN
+    RunTestPipes()
     WaitForMenu()
   END IF
 

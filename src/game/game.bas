@@ -1,7 +1,7 @@
 ' =============================================================================
 ' src/game/game.bas
-' Core game loop — Phase 3: physics only.
-' Pipes, scoring, and full collision detection are added in later phases.
+' Core game loop — Phase 4: physics + scrolling pipes.
+' Scoring and full collision detection are added in later phases.
 '
 ' Exports:
 '   RunGame()  — runs one game session; returns when Q is pressed or the
@@ -9,14 +9,16 @@
 '
 ' Depends on (via the #include chain in main.bas):
 '   physics.bas  — InitPhysics(), UpdatePhysics(), birdRow, birdVel, birdCol
+'   pipes.bas    — InitPipes(), UpdatePipes()
 '   bird_udg.bas — CHR$(144) must be loaded by LoadBirdUDG() before RunGame()
 '
 ' Rendering strategy (from ARCHITECTURE.md):
-'   CLS not called per frame.  Only the cell that moved is erased and redrawn.
-'   The previous row is tracked in prevRow; one PRINT " " clears the old cell.
+'   CLS not called per frame.  Pipes are erased then redrawn via UpdatePipes().
+'   The bird is drawn last so it always appears on top of pipe columns.
 ' =============================================================================
 
 #include "physics.bas"
+#include "pipes.bas"
 
 SUB RunGame()
   DIM prevRow  AS INTEGER
@@ -29,6 +31,7 @@ SUB RunGame()
   gameOver = 0
   quitGame = 0
   InitPhysics()
+  InitPipes()
   prevRow = birdRow
 
   ' ── HUD ─────────────────────────────────────────────────────────────────────
@@ -60,7 +63,10 @@ SUB RunGame()
       UpdatePhysics(0)
     END IF
 
-    ' Draw bird at updated position
+    ' Scroll pipes (erase at old col, move, draw at new col)
+    UpdatePipes()
+
+    ' Draw bird last — always on top of any pipe column
     PRINT INK 6; BRIGHT 1; PAPER 0; AT birdRow, birdCol; CHR$(144)
 
     ' Floor collision → game over (ceiling is clamped silently for now)

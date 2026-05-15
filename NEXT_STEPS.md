@@ -1,6 +1,6 @@
 # Next Steps — Implementation Plan
 
-Status: **Phase 3 complete. Bird physics implemented and tested. Unified test suite in place.**
+Status: **Phase 4 complete. Scrolling pipes implemented and tested. Unified test suite covers 4 modules.**
 
 ---
 
@@ -60,19 +60,23 @@ Status: **Phase 3 complete. Bird physics implemented and tested. Unified test su
 
 ---
 
-## Phase 4 — Pipes
+## Phase 4 — Pipes ✅ DONE
 
 **Goal:** green pipe columns scroll from right to left.
 
-- [ ] Create `src/game/pipes.bas`:
-  - Maintain array of 4 pipe pairs: `pipeCol()`, `pipeGap()`.
-  - Each tick: decrement `pipeCol(i)` by 1.
-  - Spawn new pipe at col 31 when rightmost pipe reaches col 24.
-  - Gap position: `pipeGap(i) = INT(RND * 14) + 2` (rows 2–16).
-  - Draw with block graphics `\::` (solid block) for pipe body.
-
-- [ ] Erase pipe characters at old column before drawing at new column.
-- [ ] Gap height = 4 rows (constant).
+- [x] Create `src/game/pipes.bas`:
+  - 4-slot arrays: `pipeCol(4)`, `pipeGap(4)`, `pipeActive(4)`.
+  - `InitPipes()` — reset all slots; spawn slot 1 (state only, no draw).
+  - `SpawnPipe(slot)` — set col=31, `gap = INT(RND * 14) + 2` (rows 2–15).
+  - `ErasePipe(slot)` / `DrawPipe(slot)` — blank or render CHR$(143) in INK 4.
+  - `UpdatePipes()` — erase → decrement → deactivate if col<0, else draw → spawn trigger.
+  - Spawn triggered when rightmost active pipe reaches col 24.
+- [x] Erase pipe at old column before drawing at new column (partial update, no CLS).
+- [x] Gap height = 4 rows (constant).
+- [x] `src/game/game.bas` — updated to call `InitPipes()` + `UpdatePipes()` per tick.
+  - Bird drawn last (after `UpdatePipes()`) so it always appears on top of pipe columns.
+- [x] `tests/test_pipes.bas` — 9 automated assertions: init state, gap bounds, spawn state.
+- [x] Pipes verified in emulator — green columns scroll left, gaps random each spawn.
 
 ---
 
@@ -152,7 +156,7 @@ Status: **Phase 3 complete. Bird physics implemented and tested. Unified test su
 | UDG memory integrity | `tests/test_bird_udg.bas` | ✅ done | Fully automated PEEK assertions |
 | Title screen attributes | `tests/test_title_render.bas` | ✅ done | Semi-automated; attributes snapshot before `CLS` |
 | Physics unit test | `tests/test_physics.bas` | ✅ done | Fully automated; gravity, flap, clamp assertions |
-| Pipe spawning | `tests/test_pipes.bas` | 🔜 planned | Print pipe state each frame to verify spacing |
+| Pipe spawning | `tests/test_pipes.bas` | ✅ done | Fully automated; init state, gap bounds, spawn assertions |
 | Collision accuracy | `tests/test_collision.bas` | 🔜 planned | Place bird adjacent to known pipe, assert death triggers |
 | Full play-through | Manual | 🔜 planned | Load release `.tap`, play to score ≥ 10 |
 
@@ -168,6 +172,7 @@ make run-test-suite            # run all tests via the menu-driven TAP
 make run-test-bird-udg         # run UDG byte test standalone
 make run-test-title-render     # run title attribute test standalone
 make run-test-physics          # run physics test standalone
+make run-test-pipes            # run pipe spawn/state test standalone
 make clean                     # remove build artefacts
 zxbc src/game/main.bas -h      # compiler help
 ```

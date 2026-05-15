@@ -9,10 +9,11 @@
 #   make run-test-bird-udg        — run LoadBirdUDG() unit test standalone
 #   make run-test-title-render    — run ShowTitle() attribute test standalone
 #   make run-test-physics         — run physics unit test standalone
+#   make run-test-pipes           — run pipe spawn/state unit test standalone
 #   make dist                     — copy TAP to dist/
 #   make clean                    — remove build artefacts
 
-.PHONY: all run tests dist clean run-test-suite run-test-bird-udg run-test-title-render run-test-physics
+.PHONY: all run tests dist clean run-test-suite run-test-bird-udg run-test-title-render run-test-physics run-test-pipes
 
-all run tests dist clean run-test-suite run-test-bird-udg run-test-title-render run-test-physics:
+all run tests dist clean run-test-suite run-test-bird-udg run-test-title-render run-test-physics run-test-pipes:
 	@$(MAKE) -f tools/Makefile $@

@@ -42,7 +42,7 @@ TEST_TAPS := $(patsubst tests/%.bas,build/%.tap,$(TEST_SRCS))
 # ── Targets ───────────────────────────────────────────────────────────────────
 .PHONY: all run dist tests clean \
         run-test-suite \
-        run-test-bird-udg run-test-title-render run-test-physics
+        run-test-bird-udg run-test-title-render run-test-physics run-test-pipes
 
 all: $(TAP)
 
@@ -71,6 +71,10 @@ run-test-title-render: build/test_title_render.tap
 	open $(HOME)/Applications/ZEsarUX.app --args $(EMU_ARGS) $(abspath $<)
 
 run-test-physics: build/test_physics.tap
+	-pkill -x zesarux 2>/dev/null; sleep 0.5
+	open $(HOME)/Applications/ZEsarUX.app --args $(EMU_ARGS) $(abspath $<)
+
+run-test-pipes: build/test_pipes.tap
 	-pkill -x zesarux 2>/dev/null; sleep 0.5
 	open $(HOME)/Applications/ZEsarUX.app --args $(EMU_ARGS) $(abspath $<)
 
