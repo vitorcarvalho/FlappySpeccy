@@ -19,13 +19,15 @@
 ' Cell address:            22528 + row*32 + col
 '
 ' Expected attribute values:
-'   "FLAPPY SPECCY"      row  2 col  9  INK 6 BRIGHT 1  → 64+6   =  70
-'   "A ZX SPECTRUM GAME" row  4 col  7  INK 5            →    5   =   5
-'   CHR$(144) bird UDG   row  7 col 14  INK 6 BRIGHT 1  → 64+6   =  70
-'   separator dashes     row 11 col  7  INK 5            →    5   =   5
-'   "PRESS SPACE TO FLY" row 13 col  7  INK 7 BRIGHT 1
-'                                        FLASH 1         → 128+64+7 = 199
-'   "HIGH SCORE: 0"      row 19 col  9  INK 4            →    4   =   4
+'   "FLAPPY SPECCY"          row  2 col  9  INK 6 BRIGHT 1  → 64+6     =  70
+'   "A ZX SPECTRUM GAME"     row  4 col  7  INK 5            →    5     =   5
+'   CHR$(144) bird UDG       row  7 col 14  INK 6 BRIGHT 1  → 64+6     =  70
+'   separator dashes         row 11 col  7  INK 5            →    5     =   5
+'   "PRESS SPACE TO FLY"     row 13 col  7  INK 7 BRIGHT 1
+'                                            FLASH 1         → 128+64+7 = 199
+'   "1=EASY 2=NORMAL 3=HARD" row 15 col  5  INK 5            →    5     =   5
+'   "> NORMAL <" (default)   row 17 col 11  INK 6 BRIGHT 1  → 64+6     =  70
+'   "HIGH SCORE: 0"          row 19 col  9  INK 4            →    4     =   4
 '
 ' Note: FLASH 0 / BRIGHT 0 at the end of ShowTitle reset the system variable
 ' only — they do NOT modify attribute bytes already written to 0x5800+.
@@ -55,6 +57,8 @@ SUB RunTestTitleRender()
   DIM atBird     AS INTEGER
   DIM atSep      AS INTEGER
   DIM atCta      AS INTEGER
+  DIM atDiffKey  AS INTEGER
+  DIM atDiffSel  AS INTEGER
   DIM atHiScore  AS INTEGER
 
   atTitle    = PEEK(22528 +  2*32 +  9)
@@ -62,6 +66,8 @@ SUB RunTestTitleRender()
   atBird     = PEEK(22528 +  7*32 + 14)
   atSep      = PEEK(22528 + 11*32 +  7)
   atCta      = PEEK(22528 + 13*32 +  7)
+  atDiffKey  = PEEK(22528 + 15*32 +  5)   ' "1=EASY 2=NORMAL 3=HARD" key guide
+  atDiffSel  = PEEK(22528 + 17*32 + 11)   ' "> NORMAL <" default selection
   atHiScore  = PEEK(22528 + 19*32 +  9)
 
   BORDER 0 : PAPER 0 : INK 7 : BRIGHT 0 : FLASH 0 : CLS
@@ -77,6 +83,8 @@ SUB RunTestTitleRender()
   AssertEq("bird UDG   r7  c14 attr=70 ",  70, atBird)
   AssertEq("separator  r11 c7  attr=5  ",   5, atSep)
   AssertEq("CTA        r13 c7  attr=199", 199, atCta)
+  AssertEq("diff key   r15 c5  attr=5  ",   5, atDiffKey)
+  AssertEq("diff sel   r17 c11 attr=70 ",  70, atDiffSel)
   AssertEq("hi-score   r19 c9  attr=4  ",   4, atHiScore)
 
   ' ── Summary ─────────────────────────────────────────────────────────────────

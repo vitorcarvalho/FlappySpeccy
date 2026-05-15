@@ -1,6 +1,6 @@
 # Next Steps — Implementation Plan
 
-Status: **Phase 4 complete. Scrolling pipes implemented and tested. Unified test suite covers 4 modules.**
+Status: **Phase 4b complete. Difficulty selection (1=Easy/2=Normal/3=Hard) live on title screen. Unified test suite covers 4 modules.**
 
 ---
 
@@ -65,18 +65,30 @@ Status: **Phase 4 complete. Scrolling pipes implemented and tested. Unified test
 **Goal:** green pipe columns scroll from right to left.
 
 - [x] Create `src/game/pipes.bas`:
-  - 4-slot arrays: `pipeCol(4)`, `pipeGap(4)`, `pipeActive(4)`.
+  - 3-slot arrays: `pipeCol(3)`, `pipeGap(3)`, `pipeActive(3)`.
   - `InitPipes()` — reset all slots; spawn slot 1 (state only, no draw).
-  - `SpawnPipe(slot)` — set col=31, `gap = INT(RND * 14) + 2` (rows 2–15).
+  - `SpawnPipe(slot)` — set col=30, gap row driven by `pipeGapSize`.
   - `ErasePipe(slot)` / `DrawPipe(slot)` — blank or render CHR$(143) in INK 4.
   - `UpdatePipes()` — erase → decrement → deactivate if col<0, else draw → spawn trigger.
-  - Spawn triggered when rightmost active pipe reaches col 24.
-- [x] Erase pipe at old column before drawing at new column (partial update, no CLS).
-- [x] Gap height = 4 rows (constant).
-- [x] `src/game/game.bas` — updated to call `InitPipes()` + `UpdatePipes()` per tick.
-  - Bird drawn last (after `UpdatePipes()`) so it always appears on top of pipe columns.
-- [x] `tests/test_pipes.bas` — 9 automated assertions: init state, gap bounds, spawn state.
+- [x] Pipes 2 columns wide; spawn when rightmost pipe reaches col 14.
+- [x] `src/game/game.bas` — 50 Hz pipe scroll, 25 Hz physics tick (bird speed).
+- [x] `tests/test_pipes.bas` — automated assertions: init state, gap bounds, spawn state.
 - [x] Pipes verified in emulator — green columns scroll left, gaps random each spawn.
+
+---
+
+## Phase 4b — Difficulty Selection ✅ DONE
+
+**Goal:** player chooses gap size from the title screen before each round.
+
+- [x] `src/game/pipes.bas` — `pipeGapSize` global (default 8); `DrawPipe`/`SpawnPipe` use it.
+  - Gap formula: `INT(RND * (21 - pipeGapSize)) + 2` → range `2 .. (22 - pipeGapSize)`.
+  - Easy=10 rows (2–12), Normal=8 rows (2–14), Hard=6 rows (2–16).
+- [x] `src/screens/title.bas` — `selectedDifficulty` global; rows 15+17 show key guide and
+  live selection indicator; 1/2/3 keys cycle; SPACE confirms.
+- [x] `src/game/main.bas` — CLS before each round; maps `selectedDifficulty` → `pipeGapSize`.
+- [x] `tests/test_pipes.bas` — 3 new difficulty bound groups (Easy/Normal/Hard), 11 total assertions.
+- [x] `tests/test_title_render.bas` — 2 new attribute assertions (rows 15+17).
 
 ---
 

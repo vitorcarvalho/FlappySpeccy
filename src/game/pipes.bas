@@ -11,13 +11,15 @@
 '
 ' Global state (arrays are 1-based in Boriel/Sinclair BASIC):
 '   pipeCol(3)    — left-edge column (0–30); -1 = off-screen; pipe is 2 cols wide
-'   pipeGap(3)    — row where the 8-row gap starts (2–13)
+'   pipeGap(3)    — row where the gap starts (2 to 22-pipeGapSize)
 '   pipeActive(3) — 1 = active, 0 = inactive
+'   pipeGapSize   — opening height in rows (10=easy / 8=normal / 6=hard; default 8)
+'                   Set by main.bas from selectedDifficulty before each RunGame call.
 '
 ' Pipe visual:
 '   CHR$(143) = solid block graphic (ZX Spectrum mosaic char, all quadrants set)
 '   INK 4 = green.  Pipe is 2 columns wide.
-'   Top body: rows 1..(gap-1).  Bottom body: rows (gap+8)..22.  Gap = 8 rows.
+'   Top body: rows 1..(gap-1).  Bottom body: rows (gap+pipeGapSize)..22.
 '   Gap rows are left blank.  Row 0 = HUD; row 23 = status bar.
 '
 ' Spawn trigger:
@@ -34,6 +36,7 @@
 DIM pipeCol(3)    AS INTEGER
 DIM pipeGap(3)    AS INTEGER
 DIM pipeActive(3) AS INTEGER
+DIM pipeGapSize   AS INTEGER : pipeGapSize = 8   ' default = Normal
 
 ' ── Erase 2-wide pipe — blank rows 1–22 across both columns ───────────────────
 
@@ -60,7 +63,7 @@ SUB DrawPipe(slot AS INTEGER)
     FOR r = 1 TO gap - 1
       PRINT PAPER 0; INK 4; AT r, c; CHR$(143); CHR$(143)
     NEXT r
-    FOR r = gap + 8 TO 22                   ' gap is 8 rows tall
+    FOR r = gap + pipeGapSize TO 22          ' gap height set by difficulty
       PRINT PAPER 0; INK 4; AT r, c; CHR$(143); CHR$(143)
     NEXT r
   END IF
@@ -70,7 +73,7 @@ END SUB
 
 SUB SpawnPipe(slot AS INTEGER)
   pipeCol(slot)    = 30
-  pipeGap(slot)    = INT(RND * 12) + 2   ' random row 2–13 (gap+8 must stay ≤22)
+  pipeGap(slot)    = INT(RND * (21 - pipeGapSize)) + 2   ' row 2..(22-pipeGapSize)
   pipeActive(slot) = 1
 END SUB
 

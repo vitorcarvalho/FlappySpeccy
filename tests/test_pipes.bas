@@ -5,16 +5,25 @@
 ' Fully automated — no user interaction required.
 ' Green = PASS, red = FAIL.  Press any key to exit.
 '
-' Test cases:
-'   1. InitPipes()      — pipeActive(1) = 1  (first pipe active)
-'   2. InitPipes()      — pipeCol(1) = 30    (left edge; pipe is 2 cols wide)
-'   3. InitPipes()      — pipeGap(1) >= 2    (lower bound of 8-row gap start)
-'   4. InitPipes()      — pipeGap(1) <= 13   (upper bound of 8-row gap start)
-'   5. InitPipes()      — pipeActive(2) = 0  (remaining slots inactive)
-'   6. SpawnPipe(2)     — pipeActive(2) = 1  (slot becomes active)
-'   7. SpawnPipe(2)     — pipeCol(2) = 30    (left edge of 2-wide pipe)
-'   8. SpawnPipe(2)     — pipeGap(2) >= 2    (random gap lower bound)
-'   9. SpawnPipe(2)     — pipeGap(2) <= 13   (random gap upper bound)
+' Gap formula: INT(RND * (21 - pipeGapSize)) + 2  →  row 2 .. (22 - pipeGapSize)
+'
+' Test cases — InitPipes() / SpawnPipe() invariants:
+'   1.  InitPipes()      — pipeActive(1) = 1  (first pipe active)
+'   2.  InitPipes()      — pipeCol(1) = 30    (left edge; pipe is 2 cols wide)
+'   3.  InitPipes()      — pipeActive(2) = 0  (remaining slots inactive)
+'   4.  SpawnPipe(2)     — pipeActive(2) = 1  (slot becomes active)
+'   5.  SpawnPipe(2)     — pipeCol(2) = 30    (left edge of 2-wide pipe)
+'
+' Test cases — difficulty gap bounds (pipeGapSize controls the range):
+'   Easy   (pipeGapSize=10)  gap: InitPipes → pipeGap(1) in 2..12
+'   6.  pipeGap(1) >= 2
+'   7.  pipeGap(1) <= 12
+'   Normal (pipeGapSize=8)   gap: InitPipes → pipeGap(1) in 2..14
+'   8.  pipeGap(1) >= 2
+'   9.  pipeGap(1) <= 14
+'   Hard   (pipeGapSize=6)   gap: InitPipes → pipeGap(1) in 2..16
+'   10. pipeGap(1) >= 2
+'   11. pipeGap(1) <= 16
 '
 ' Note: UpdatePipes() is not tested here because it calls ErasePipe/DrawPipe
 ' which print to screen and would corrupt the assertion output. The scroll
@@ -37,20 +46,33 @@ SUB RunTestPipes()
   passed = 0
   failed = 0
 
-  ' ── Test group 1: InitPipes ───────────────────────────────────────────────
+  ' ── Group 1: InitPipes / SpawnPipe invariants (difficulty-independent) ────
+  pipeGapSize = 8   ' Normal — default; any value works for these checks
   InitPipes()
   AssertEq("init: pipeActive(1) = 1",  1,  pipeActive(1))
   AssertEq("init: pipeCol(1) = 30",    30, pipeCol(1))
-  AssertGT("init: pipeGap(1) >= 2",    1,  pipeGap(1))
-  AssertLTE("init: pipeGap(1) <= 13", 13,  pipeGap(1))
   AssertEq("init: pipeActive(2) = 0",  0,  pipeActive(2))
-
-  ' ── Test group 2: SpawnPipe ───────────────────────────────────────────────
   SpawnPipe(2)
   AssertEq("spawn: pipeActive(2) = 1",  1,  pipeActive(2))
   AssertEq("spawn: pipeCol(2) = 30",   30,  pipeCol(2))
-  AssertGT("spawn: pipeGap(2) >= 2",    1,  pipeGap(2))
-  AssertLTE("spawn: pipeGap(2) <= 13", 13,  pipeGap(2))
+
+  ' ── Group 2: gap bounds — Easy (pipeGapSize=10)  range 2..12 ─────────────
+  pipeGapSize = 10
+  InitPipes()
+  AssertGT ("easy: pipeGap(1) >= 2",    1,  pipeGap(1))
+  AssertLTE("easy: pipeGap(1) <= 12",  12,  pipeGap(1))
+
+  ' ── Group 3: gap bounds — Normal (pipeGapSize=8)  range 2..14 ────────────
+  pipeGapSize = 8
+  InitPipes()
+  AssertGT ("norm: pipeGap(1) >= 2",    1,  pipeGap(1))
+  AssertLTE("norm: pipeGap(1) <= 14",  14,  pipeGap(1))
+
+  ' ── Group 4: gap bounds — Hard (pipeGapSize=6)  range 2..16 ─────────────
+  pipeGapSize = 6
+  InitPipes()
+  AssertGT ("hard: pipeGap(1) >= 2",    1,  pipeGap(1))
+  AssertLTE("hard: pipeGap(1) <= 16",  16,  pipeGap(1))
 
   ' ── Summary ──────────────────────────────────────────────────────────────
   PRINT

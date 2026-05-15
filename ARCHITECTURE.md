@@ -53,12 +53,12 @@
 
 | File | Status | Responsibility |
 |---|---|---|
-| `src/game/main.bas` | ✅ done | Bootstrap: load UDGs → title → `DO/RunGame/LOOP` |
-| `src/screens/title.bas` | ✅ done | `ShowTitle(score)` — splash screen, high score display, "PRESS SPACE" |
+| `src/game/main.bas` | ✅ done | Bootstrap: load UDGs → CLS → title → map difficulty → `RunGame` loop |
+| `src/screens/title.bas` | ✅ done | `ShowTitle(score)` — splash screen, difficulty 1/2/3 selection, sets `selectedDifficulty` |
 | `assets/sprites/bird_udg.bas` | ✅ done | `LoadBirdUDG()` — POKEs 8 bytes into UDG slot "A" ("SKY" pixel-art glyph) |
 | `src/game/physics.bas` | ✅ done | `InitPhysics()` / `UpdatePhysics(flap%)` — gravity accumulator, velocity clamp, floor/ceiling clamp |
 | `src/game/game.bas` | ✅ done | `RunGame()` — 50 Hz render loop, 25 Hz physics tick, input latch, death flash |
-| `src/game/pipes.bas` | ✅ done | `InitPipes()` / `UpdatePipes()` — 3-slot array, 2-col-wide pipes, 6-row gaps, scroll + spawn |
+| `src/game/pipes.bas` | ✅ done | `InitPipes()` / `UpdatePipes()` — 3-slot array, 2-col-wide pipes, difficulty-driven gap (`pipeGapSize` 10/8/6) |
 | `src/game/collision.bas` | 🔜 planned | ATTR-based hit detection (read display attributes) |
 | `src/screens/gameover.bas` | 🔜 planned | Game-over splash, medal display |
 | `assets/sprites/pipe_tiles.bas` | 🔜 planned | Block graphic character selection |
@@ -74,10 +74,14 @@ DIM birdVel  AS INTEGER   ' vertical velocity (-3 to +3)
 DIM score    AS INTEGER   ' pipes cleared
 DIM gameOver AS INTEGER   ' 0=playing, 1=dead
 
-' Pipe array — up to 4 pipe pairs on screen simultaneously
-DIM pipeCol(4)      AS INTEGER  ' column of each pipe pair
-DIM pipeGap(4)      AS INTEGER  ' row where gap begins (1-16)
-DIM pipeActive(4)   AS INTEGER  ' 1=active, 0=free slot
+' Pipe array — 3 slots max on screen simultaneously
+DIM pipeCol(3)         AS INTEGER  ' left-edge column of each pipe
+DIM pipeGap(3)         AS INTEGER  ' row where gap starts (2..(22-pipeGapSize))
+DIM pipeActive(3)      AS INTEGER  ' 1=active, 0=free slot
+DIM pipeGapSize        AS INTEGER  ' gap height: 10=easy / 8=normal / 6=hard
+
+' Difficulty (set on title screen, applied before each RunGame call)
+DIM selectedDifficulty AS INTEGER  ' 1=Easy / 2=Normal / 3=Hard
 ```
 
 ---

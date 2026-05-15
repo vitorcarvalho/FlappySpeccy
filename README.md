@@ -30,7 +30,7 @@ Faithful ZX Spectrum adaptation of the Flappy Bird mechanic:
 - **Gap** — random vertical gap, same height every pair, constant width.
 - **Score** — increments each time a pipe pair is cleared; displayed in the border area.
 - **Collision** — detected when the bird occupies the same cell as a pipe or the floor/ceiling.
-- **Difficulty** — pipe scroll speed increases every 5 points.
+- **Difficulty** — selected on the title screen (1=Easy/2=Normal/3=Hard); controls pipe gap height (10/8/6 rows). Scroll speed increase every 5 points is planned for Phase 8.
 
 ### Controls
 
@@ -114,9 +114,9 @@ make run-test-pipes           # automated — pipe init state, gap bounds, spawn
 |---|---|---|---|
 | `run-test-suite` | `tests/test_suite.bas` | Menu-driven | Unified runner — all tests from one TAP |
 | `run-test-bird-udg` | `tests/test_bird_udg.bas` | Fully automated | Calls `LoadBirdUDG()`, PEEKs all 8 UDG bytes, compares against expected pixel map |
-| `run-test-title-render` | `tests/test_title_render.bas` | Semi-automated (press SPACE once) | Renders the title screen, snapshots 6 attribute cells **before** `CLS`, then asserts ink/paper/bright/flash |
+| `run-test-title-render` | `tests/test_title_render.bas` | Semi-automated (press SPACE once) | Renders title screen, snapshots 8 attribute cells **before** `CLS` (incl. difficulty rows), then asserts ink/paper/bright/flash |
 | `run-test-physics` | `tests/test_physics.bas` | Fully automated | Init state, gravity fall, flap impulse, velocity clamp (≤3), floor clamp (≤22) |
-| `run-test-pipes` | `tests/test_pipes.bas` | Fully automated | Pipe init state, gap bounds (2–15), spawn column and active flag |
+| `run-test-pipes` | `tests/test_pipes.bas` | Fully automated | Pipe init state, gap bounds per difficulty (Easy 2–12, Normal 2–14, Hard 2–16), spawn flag |
 
 ### Writing a new test
 
@@ -146,7 +146,7 @@ FlappySpeccy/
 │   │   ├── physics.bas         ← InitPhysics() / UpdatePhysics() — gravity + flap
 │   │   └── pipes.bas           ← InitPipes() / UpdatePipes() — 2-wide scrolling pipe columns
 │   └── screens/
-│       └── title.bas           ← ShowTitle() — splash screen with UDG bird and "PRESS SPACE"
+│       └── title.bas           ← ShowTitle() — splash, difficulty 1/2/3 keys, "PRESS SPACE"
 │
 ├── assets/
 │   └── sprites/

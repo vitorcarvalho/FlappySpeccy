@@ -206,6 +206,35 @@ END IF
 - **Input latch:** `IF key = " " THEN flapPending = 1` fires every frame; the flag is consumed by `UpdatePhysics` and reset only on the physics frame. No SPACE press is lost on a skipped frame.
 - To change speed ratio: set divider to `3` for ≈17 Hz physics (slower/floatier), or remove divider entirely for 50 Hz (original fast feel).
 
+### 8. Difficulty-driven parameter via global variable
+
+The difficulty selection pattern avoids passing parameters through deep call chains. Instead, a shared global in the module that owns the parameter (`pipeGapSize` in `pipes.bas`) is set by the coordinator (`RunFlappySpeccy` in `main.bas`) after the player confirms their choice on the title screen.
+
+```basic
+' --- pipes.bas: declare the parameter with a safe default ---
+DIM pipeGapSize AS INTEGER : pipeGapSize = 8
+
+' --- title.bas: record the player's choice in a global ---
+DIM selectedDifficulty AS INTEGER   ' 1=Easy / 2=Normal / 3=Hard
+' ... input loop sets selectedDifficulty = diff before returning ...
+
+' --- main.bas: map choice → parameter before RunGame ---
+IF selectedDifficulty = 1 THEN pipeGapSize = 10
+IF selectedDifficulty = 2 THEN pipeGapSize = 8
+IF selectedDifficulty = 3 THEN pipeGapSize = 6
+RunGame()
+```
+
+**Gap formula:** `INT(RND * (21 - pipeGapSize)) + 2` produces values in `2 .. (22 - pipeGapSize)`.
+
+| Difficulty | `pipeGapSize` | Gap row range |
+|---|---|---|
+| Easy   | 10 | 2–12 |
+| Normal |  8 | 2–14 |
+| Hard   |  6 | 2–16 |
+
+The `DrawPipe` and `SpawnPipe` SUBs in `pipes.bas` simply reference `pipeGapSize` — no parameter changes to those functions were needed.
+
 ---
 
 ## Prior Art — Flappy Bird on ZX Spectrum

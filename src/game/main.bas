@@ -44,17 +44,23 @@ DIM highScore AS INTEGER   ' best score seen this session; 0 until game loop add
 ' =============================================================================
 ' RunFlappySpeccy — full game session (callable from launcher or standalone)
 ' =============================================================================
-' Initialises screen and UDG, then loops: title screen → RunGame → repeat.
-' When invoked from launcher.bas, LAUNCHER_MODE suppresses the standalone call
-' below so only this SUB definition is compiled into the launcher binary.
+' Initialises screen and UDG, then loops:
+'   CLS → ShowTitle (sets selectedDifficulty) → map difficulty → RunGame → repeat.
+' pipeGapSize is set from selectedDifficulty before each game:
+'   1 = Easy (10 rows)  2 = Normal (8 rows, default)  3 = Hard (6 rows)
+' When invoked from launcher.bas, LAUNCHER_MODE suppresses the standalone call.
 
 SUB RunFlappySpeccy()
   BORDER 0 : PAPER 0 : INK 7 : BRIGHT 0 : FLASH 0
-  CLS
   LoadBirdUDG()
   highScore = 0
   DO
+    CLS
     ShowTitle(highScore)
+    ' Map selectedDifficulty → pipeGapSize (set in pipes.bas, used by DrawPipe/SpawnPipe)
+    IF selectedDifficulty = 1 THEN pipeGapSize = 10
+    IF selectedDifficulty = 2 THEN pipeGapSize = 8
+    IF selectedDifficulty = 3 THEN pipeGapSize = 6
     RunGame()
   LOOP
 END SUB
