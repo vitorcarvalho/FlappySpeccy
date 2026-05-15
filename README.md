@@ -96,7 +96,7 @@ make tests
 ### Run the unified suite (recommended)
 
 ```sh
-make run-test-suite    # menu: press 1/2/3/4 to select, any key to return to menu
+make run-test-suite    # menu: press 1/2/3/4/5/6 to select, any key to return to menu
 ```
 
 ### Run a standalone test
@@ -107,6 +107,7 @@ make run-test-title-render    # semi-automated — renders title, then checks sc
 make run-test-physics         # automated — gravity, flap, velocity clamp, floor clamp
 make run-test-pipes           # automated — pipe init state, gap bounds, spawn state
 make run-test-collision       # automated — safe/floor/pipe-hit/pipe-clear assertions
+make run-test-gameover        # automated — medal rank boundary assertions
 ```
 
 ### Test catalogue
@@ -119,6 +120,7 @@ make run-test-collision       # automated — safe/floor/pipe-hit/pipe-clear ass
 | `run-test-physics` | `tests/test_physics.bas` | Fully automated | Init state, gravity fall, flap impulse, velocity clamp (≤3), floor clamp (≤22) |
 | `run-test-pipes` | `tests/test_pipes.bas` | Fully automated | Pipe init state, gap bounds per difficulty (Easy 2–12, Normal 2–14, Hard 2–16), spawn flag |
 | `run-test-collision` | `tests/test_collision.bas` | Fully automated | Safe position (no hit), floor sentinel (row 22), POKE green attr → hit, restore → no hit |
+| `run-test-gameover` | `tests/test_gameover.bas` | Fully automated | `GetMedalRank`: boundary values 0/9/10/20/30/40/50 → ranks 0/0/1/2/3/4/4 |
 
 ### Writing a new test
 
@@ -166,12 +168,13 @@ FlappySpeccy/
 │
 └── tests/
     ├── assert_helpers.bas       ← Shared AssertEq/GT/LTE/Attr + passed/failed counters
-    ├── test_suite.bas           ← Menu-driven unified runner (press 1/2/3/4/5)
+    ├── test_suite.bas           ← Menu-driven unified runner (press 1/2/3/4/5/6)
     ├── test_bird_udg.bas        ← UDG memory integrity test (fully automated)
     ├── test_title_render.bas    ← Screen attribute test (semi-automated)
     ├── test_physics.bas         ← Physics unit test (fully automated)
     ├── test_pipes.bas           ← Pipe init/spawn state test (fully automated)
-    └── test_collision.bas       ← Collision detection test (fully automated)
+    ├── test_collision.bas       ← Collision detection test (fully automated)
+    └── test_gameover.bas        ← Medal rank boundary test (fully automated)
 ```
 
 Full architecture details → [ARCHITECTURE.md](ARCHITECTURE.md)

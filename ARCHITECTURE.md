@@ -57,10 +57,10 @@
 | `src/screens/title.bas` | ✅ done | `ShowTitle(score)` — splash screen, difficulty 1/2/3 selection, sets `selectedDifficulty` |
 | `assets/sprites/bird_udg.bas` | ✅ done | `LoadBirdUDG()` — POKEs 8 bytes into UDG slot "A" ("SKY" pixel-art glyph) |
 | `src/game/physics.bas` | ✅ done | `InitPhysics()` / `UpdatePhysics(flap%)` — gravity accumulator, velocity clamp, floor/ceiling clamp |
-| `src/game/game.bas` | ✅ done | `RunGame()` — 50 Hz render loop, 25 Hz physics tick, collision check, death flash |
-| `src/game/pipes.bas` | ✅ done | `InitPipes()` / `UpdatePipes()` — 3-slot array, 2-col-wide pipes, difficulty-driven gap (`pipeGapSize` 10/8/6) |
+| `src/game/game.bas` | ✅ done | `RunGame()` — 50 Hz render loop, 25 Hz physics tick, collision, scoring (increments `score` global), HUD update, death flash |
+| `src/game/pipes.bas` | ✅ done | `InitPipes()` / `UpdatePipes()` — 3-slot array, 2-col-wide pipes, difficulty-driven gap (`pipeGapSize` 10/8/6); `pipeScored(3)` tracks awarded points |
 | `src/game/collision.bas` | ✅ done | `CheckCollision()` — floor sentinel (row ≥ 22) + ATTR-based pipe hit (INK 4 = green) |
-| `src/screens/gameover.bas` | 🔜 planned | Game-over splash, medal display |
+| `src/screens/gameover.bas` | ✅ done | `GetMedalRank(score)` (pure, testable) + `ShowGameOver(score)` — medal display, SPACE to retry |
 | `assets/sprites/pipe_tiles.bas` | 🔜 planned | Block graphic character selection |
 | `assets/sounds/sounds.bas` | 🔜 planned | Named `BEEP` sequences for events |
 
@@ -155,8 +155,8 @@ spectrum/
 │   │   ├── pipes.bas           ✅ InitPipes() / UpdatePipes() — scroll, spawn, gap
 │   │   └── collision.bas       ✅ CheckCollision() — floor + ATTR pipe hit detection
 │   └── screens/
-│       ├── title.bas           ✅ Title / start screen with UDG bird
-│       └── gameover.bas        🔜 Game-over screen
+│       ├── title.bas           ✅ Title / start screen with UDG bird, difficulty select
+│       └── gameover.bas        ✅ GetMedalRank() + ShowGameOver() — medal, SPACE to retry
 │
 ├── assets/
 │   ├── sprites/

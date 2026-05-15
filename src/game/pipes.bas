@@ -36,6 +36,7 @@
 DIM pipeCol(3)    AS INTEGER
 DIM pipeGap(3)    AS INTEGER
 DIM pipeActive(3) AS INTEGER
+DIM pipeScored(3) AS INTEGER   ' 1 once this pipe has already awarded a point
 DIM pipeGapSize   AS INTEGER : pipeGapSize = 8   ' default = Normal
 
 ' ── Erase 2-wide pipe — blank rows 1–22 across both columns ───────────────────
@@ -75,6 +76,7 @@ SUB SpawnPipe(slot AS INTEGER)
   pipeCol(slot)    = 30
   pipeGap(slot)    = INT(RND * (21 - pipeGapSize)) + 2   ' row 2..(22-pipeGapSize)
   pipeActive(slot) = 1
+  pipeScored(slot) = 0   ' reset so this new pipe can award a point
 END SUB
 
 ' ── Initialise all 3 slots and spawn the first pipe (state only, no draw) ─────
@@ -85,6 +87,7 @@ SUB InitPipes()
     pipeActive(i) = 0
     pipeCol(i)    = -1
     pipeGap(i)    = 0
+    pipeScored(i) = 0
   NEXT i
   SpawnPipe(1)
 END SUB

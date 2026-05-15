@@ -1,14 +1,15 @@
 ' =============================================================================
 ' src/game/game.bas
-' Core game loop — Phase 5: physics + scrolling pipes + collision detection.
+' Core game loop — Phase 6: physics + scrolling pipes + collision + scoring.
 '
 ' Exports:
 '   RunGame()  — runs one game session; returns when Q is pressed or the
 '                bird collides with a pipe or the floor (row 22).
+'   score      — INTEGER global; final score readable by main.bas after return.
 '
 ' Depends on (via the #include chain in main.bas):
 '   physics.bas   — InitPhysics(), UpdatePhysics(), birdRow, birdVel, birdCol
-'   pipes.bas     — InitPipes(), UpdatePipes()
+'   pipes.bas     — InitPipes(), UpdatePipes(), pipeCol/Active/Scored arrays
 '   collision.bas — CheckCollision() — returns 1 on pipe or floor hit
 '   bird_udg.bas  — CHR$(144) must be loaded by LoadBirdUDG() before RunGame()
 '
@@ -20,11 +21,19 @@
 '   The game loop runs at 50 Hz but physics only advances every 2 frames (25 Hz).
 '   Pipes still scroll every frame for smooth visual movement.
 '   Flap input is latched so no SPACE press is lost on a skipped physics frame.
+'
+' Scoring:
+'   Bird is always at birdCol (=4).  A pipe at pipeCol <= 2 has fully cleared
+'   the bird.  pipeScored(i) prevents awarding the point more than once.
+'   HUD row 0 layout:  "SPC=FLAP" col 0 | score col 14 | "Q=QUIT" col 25
 ' =============================================================================
 
 #include "physics.bas"
 #include "pipes.bas"
 #include "collision.bas"
+#include "../screens/gameover.bas"
+
+DIM score AS INTEGER   ' global — main.bas reads this after RunGame() returns
 
 SUB RunGame()
   DIM prevRow     AS INTEGER
@@ -33,6 +42,7 @@ SUB RunGame()
   DIM key         AS STRING
   DIM physTick    AS INTEGER   ' toggles 0/1; physics runs only when 1
   DIM flapPending AS INTEGER   ' latches SPACE across skipped physics frames
+  DIM i           AS INTEGER   ' scoring loop index
 
   ' ── Initialise ──────────────────────────────────────────────────────────────
   CLS
@@ -40,13 +50,16 @@ SUB RunGame()
   quitGame    = 0
   physTick    = 0
   flapPending = 0
+  score       = 0
   InitPhysics()
   InitPipes()
   prevRow = birdRow
 
   ' ── HUD ─────────────────────────────────────────────────────────────────────
-  ' Row 0 is reserved for controls hint; bird is clamped to rows 1–22.
-  PRINT INK 5; BRIGHT 0; PAPER 0; AT 0, 0; "SPC=FLAP  Q=QUIT"
+  ' Row 0 layout: "SPC=FLAP" col 0 | score (right-justified) col 14 | "Q=QUIT" col 25
+  PRINT INK 5; BRIGHT 0; PAPER 0; AT 0, 0;  "SPC=FLAP"
+  PRINT INK 6; BRIGHT 1; PAPER 0; AT 0, 14; "0"
+  PRINT INK 5; BRIGHT 0; PAPER 0; AT 0, 25; "Q=QUIT"
 
   ' ── Initial draw ────────────────────────────────────────────────────────────
   PRINT INK 6; BRIGHT 1; PAPER 0; AT birdRow, birdCol; CHR$(144)
@@ -78,6 +91,17 @@ SUB RunGame()
 
     ' Scroll pipes every frame — smooth visual movement at full 50 Hz
     UpdatePipes()
+
+    ' ── Scoring ─────────────────────────────────────────────────────────────
+    ' Bird is at birdCol (4).  A pipe left-edge at col <= 2 means its trailing
+    ' edge has cleared col 4, so the bird has passed it.  Award point once.
+    FOR i = 1 TO 3
+      IF pipeActive(i) = 1 AND pipeScored(i) = 0 AND pipeCol(i) <= 2 THEN
+        pipeScored(i) = 1
+        score = score + 1
+        PRINT INK 6; BRIGHT 1; PAPER 0; AT 0, 14; score; "  "
+      END IF
+    NEXT i
 
     ' Collision check BEFORE drawing the bird — at this point the attribute at
     ' birdRow/birdCol reflects only the pipe (or empty air), not the bird's own

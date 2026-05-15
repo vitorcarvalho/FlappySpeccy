@@ -1,6 +1,6 @@
 # Next Steps — Implementation Plan
 
-Status: **Phase 4b complete. Difficulty selection (1=Easy/2=Normal/3=Hard) live on title screen. Unified test suite covers 4 modules.**
+Status: **Phase 6 complete. Scoring, HUD, game-over screen with medals live. Unified test suite covers 6 modules.**
 
 ---
 
@@ -112,19 +112,21 @@ Status: **Phase 4b complete. Difficulty selection (1=Easy/2=Normal/3=Hard) live 
 
 ---
 
-## Phase 6 — Screens & Score
+## Phase 6 — Screens & Score ✅ DONE
 
-**Goal:** title screen, in-game score, game-over screen with medal.
+**Goal:** in-game score, HUD, game-over screen with medal.
 
-- [ ] Create `src/screens/title.bas`:
-  - ASCII art title, "PRESS SPACE TO START", high score.
-
-- [ ] Create `src/screens/gameover.bas`:
-  - "GAME OVER", final score, bronze/silver/gold/platinum medal
-    (≥10 / ≥20 / ≥30 / ≥40 points — matching original Flappy Bird).
-  - Prompt: "PRESS SPACE TO RETRY".
-
-- [ ] Score display: `PRINT AT 0, 13; score` (top-centre, bright white).
+- [x] `src/game/pipes.bas` — added `pipeScored(3)` array; reset on `InitPipes` and `SpawnPipe`.
+- [x] `src/screens/gameover.bas` — `GetMedalRank(score AS INTEGER) AS INTEGER` (pure, testable):
+  - Thresholds: ≥40 = Platinum (4), ≥30 = Gold (3), ≥20 = Silver (2), ≥10 = Bronze (1), else 0.
+  - `ShowGameOver(score)` — renders "GAME OVER", score, medal name with colour, flashing retry prompt.
+- [x] `src/game/game.bas` — `score` declared as global INTEGER; scoring loop after each `UpdatePipes()`:
+  - Pipe cleared when `pipeCol(i) <= 2` (bird at col 4); `pipeScored` prevents double-award.
+  - HUD row 0: `SPC=FLAP` (col 0) | score (col 14, bright yellow) | `Q=QUIT` (col 25).
+- [x] `src/game/main.bas` — `highScore` updated after each `RunGame()`; `ShowGameOver(score)` called before next title.
+- [x] `tests/test_gameover.bas` — 7 automated boundary assertions for `GetMedalRank`.
+- [x] `tests/test_suite.bas` — option **6 GAME OVER** added to menu.
+- [x] `make run-test-gameover` target added to both Makefiles.
 
 ---
 
@@ -204,6 +206,7 @@ Status: **Phase 4b complete. Difficulty selection (1=Easy/2=Normal/3=Hard) live 
 | Physics unit test | `tests/test_physics.bas` | ✅ done | Fully automated; gravity, flap, clamp assertions |
 | Pipe spawning | `tests/test_pipes.bas` | ✅ done | Fully automated; init state, gap bounds, spawn assertions |
 | Collision accuracy | `tests/test_collision.bas` | ✅ done | Automated: safe/floor/POKE-green/POKE-clear — 4 assertions |
+| Medal ranks | `tests/test_gameover.bas` | ✅ done | Automated: boundary values 0/9/10/20/30/40/50 — 7 assertions |
 | Full play-through | Manual | 🔜 planned | Load release `.tap`, play to score ≥ 10 |
 
 ---
@@ -219,6 +222,8 @@ make run-test-bird-udg         # run UDG byte test standalone
 make run-test-title-render     # run title attribute test standalone
 make run-test-physics          # run physics test standalone
 make run-test-pipes            # run pipe spawn/state test standalone
+make run-test-collision        # run collision detection test standalone
+make run-test-gameover         # run medal rank test standalone
 make clean                     # remove build artefacts
 zxbc src/game/main.bas -h      # compiler help
 ```

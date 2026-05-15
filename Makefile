@@ -13,14 +13,15 @@
 #   make run-test-physics         — run physics unit test standalone
 #   make run-test-pipes           — run pipe spawn/state unit test standalone
 #   make run-test-collision       — run collision detection unit test standalone
+#   make run-test-gameover        — run medal rank unit test standalone
 #   make dist                     — copy TAP to dist/
 #   make clean                    — remove build artefacts
 
 .PHONY: all run tests dist clean build-launcher run-launcher \
         run-test-suite run-test-bird-udg run-test-title-render run-test-physics run-test-pipes \
-        run-test-collision
+        run-test-collision run-test-gameover
 
 all run tests dist clean build-launcher run-launcher \
 run-test-suite run-test-bird-udg run-test-title-render run-test-physics run-test-pipes \
-run-test-collision:
+run-test-collision run-test-gameover:
 	@$(MAKE) -f tools/Makefile $@

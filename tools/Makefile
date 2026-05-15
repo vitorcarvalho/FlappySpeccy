@@ -51,7 +51,7 @@ TEST_TAPS := $(patsubst tests/%.bas,build/%.tap,$(TEST_SRCS))
         build-launcher run-launcher \
         run-test-suite \
         run-test-bird-udg run-test-title-render run-test-physics run-test-pipes \
-        run-test-collision
+        run-test-collision run-test-gameover
 
 all: $(TAP)
 
@@ -99,6 +99,10 @@ run-test-pipes: build/test_pipes.tap
 	open $(HOME)/Applications/ZEsarUX.app --args $(EMU_ARGS) $(abspath $<)
 
 run-test-collision: build/test_collision.tap
+	-pkill -x zesarux 2>/dev/null; sleep 0.5
+	open $(HOME)/Applications/ZEsarUX.app --args $(EMU_ARGS) $(abspath $<)
+
+run-test-gameover: build/test_gameover.tap
 	-pkill -x zesarux 2>/dev/null; sleep 0.5
 	open $(HOME)/Applications/ZEsarUX.app --args $(EMU_ARGS) $(abspath $<)
 

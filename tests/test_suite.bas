@@ -10,6 +10,8 @@
 '   2  Title Render   — semi-automated (press SPACE to advance phase 1)
 '   3  Physics        — automated gravity, flap, clamp assertions
 '   4  Pipes          — automated init and spawn state assertions
+'   5  Collision      — automated floor + attr-based pipe hit assertions
+'   6  Game Over      — automated medal rank boundary assertions
 '
 ' #define SUITE_MODE before including test files suppresses their standalone
 ' RunTestXxx() + PAUSE 0 calls, leaving only the SUB definitions.
@@ -26,6 +28,7 @@
 #include "test_physics.bas"
 #include "test_pipes.bas"
 #include "test_collision.bas"
+#include "test_gameover.bas"
 
 ' ── Menu ──────────────────────────────────────────────────────────────────────
 
@@ -38,8 +41,9 @@ SUB ShowMenu()
   PRINT           INK 7; PAPER 0; AT 10,6; "3  PHYSICS       (auto)"
   PRINT           INK 7; PAPER 0; AT 12,6; "4  PIPES         (auto)"
   PRINT           INK 7; PAPER 0; AT 14,6; "5  COLLISION     (auto)"
-  PRINT           INK 5; PAPER 0; AT 16,6; "0  BACK TO LAUNCHER"
-  PRINT BRIGHT 1; INK 5; PAPER 0; AT 18,4; "PRESS 1-5 TO SELECT TEST"
+  PRINT           INK 7; PAPER 0; AT 16,6; "6  GAME OVER     (auto)"
+  PRINT           INK 5; PAPER 0; AT 18,6; "0  BACK TO LAUNCHER"
+  PRINT BRIGHT 1; INK 5; PAPER 0; AT 20,4; "PRESS 1-6 TO SELECT TEST"
 END SUB
 
 ' ── "back to menu" prompt shown after every test ──────────────────────────────
@@ -62,7 +66,7 @@ SUB RunTestSuite()
     DO
       PAUSE 1
       menuKey = INKEY$
-    LOOP UNTIL menuKey = "0" OR menuKey = "1" OR menuKey = "2" OR menuKey = "3" OR menuKey = "4" OR menuKey = "5"
+    LOOP UNTIL menuKey = "0" OR menuKey = "1" OR menuKey = "2" OR menuKey = "3" OR menuKey = "4" OR menuKey = "5" OR menuKey = "6"
 
     IF menuKey = "1" THEN
       RunTestBirdUDG()
@@ -86,6 +90,11 @@ SUB RunTestSuite()
 
     IF menuKey = "5" THEN
       RunTestCollision()
+      WaitForMenu()
+    END IF
+
+    IF menuKey = "6" THEN
+      RunTestGameOver()
       WaitForMenu()
     END IF
   LOOP UNTIL menuKey = "0"

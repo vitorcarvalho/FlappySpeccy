@@ -62,6 +62,9 @@ SUB RunFlappySpeccy()
     IF selectedDifficulty = 2 THEN pipeGapSize = 8
     IF selectedDifficulty = 3 THEN pipeGapSize = 6
     RunGame()
+    ' Update session high score and show game-over screen (score is a global in game.bas)
+    IF score > highScore THEN highScore = score
+    ShowGameOver(score)
   LOOP
 END SUB
 
