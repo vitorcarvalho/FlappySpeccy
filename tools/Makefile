@@ -69,6 +69,7 @@ run-test-title-render: build/test_title_render.tap
 	-pkill -x zesarux 2>/dev/null; sleep 0.5
 	open $(HOME)/Applications/ZEsarUX.app --args $(EMU_ARGS) $(abspath $<)
 
+
 # ── Distribution ──────────────────────────────────────────────────────────────
 dist: $(TAP)
 	@mkdir -p dist

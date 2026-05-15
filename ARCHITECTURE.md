@@ -102,25 +102,22 @@ END LOOP
 
 ## 6. Bird Visual Identity — Peacock
 
-The game character is called the **bird** throughout the code, but its visual representation is a **Peacock** — specifically a peacock in side-profile flying pose.
+The game character is called the **bird** throughout the code, but its visual representation is a **Peacock** — front-facing, tail fan fully spread, inspired by the NBC peacock logo.
 
-At 8×8 pixels (one UDG slot), the design prioritises the two most recognisable peacock silhouette features:
-
-1. **Crest** — two short spikes on top of the head (rows 0–1). This is the most legible peacock identifier at low resolution.
-2. **Tail hint** — rows 5–6 fan slightly wider than the body to suggest the peacock train trailing behind in flight.
+The fan radiates upward from a narrow body/neck at the bottom. The alternating feather tips in row 0 (X_X_X_X_) capture the iconic NBC pinwheel silhouette at 8×8 pixel resolution.
 
 ```
-  Row 0:  _X_X____   crest tips
-  Row 1:  _XXX____   crest base
-  Row 2:  _XXXX___   head
-  Row 3:  XXXXXXX_   wings spread (flying)
-  Row 4:  _XXXX___   body
-  Row 5:  __XXXX__   lower body
-  Row 6:  ___XXX__   tail feather hint
+  Row 0:  X_X_X_X_   feather tips (4 tips, alternating)
+  Row 1:  _X_X_X__   feather shafts (converging)
+  Row 2:  _XXXXXX_   full fan spread
+  Row 3:  __XXXX__   fan base narrowing
+  Row 4:  ___XX___   neck
+  Row 5:  ___XXX__   body / chest
+  Row 6:  ____X___   lower body
   Row 7:  ________   empty
 ```
 
-**Future improvement:** if a second UDG slot (B) is available, print it immediately to the right of the bird to show a fuller peacock fan tail. The colour scheme (cyan/green ink) reinforces the peacock identity — consider changing the bird's `INK` from yellow (6) to cyan (5) or green (4) when the game palette is finalised.
+**Future improvement:** if a second UDG slot (B) is available, print it immediately to the right to extend the fan width. The colour scheme (cyan/green ink) reinforces the peacock identity — consider `INK 5` (cyan) or `INK 4` (green) when the game palette is finalised.
 
 ---
 

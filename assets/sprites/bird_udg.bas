@@ -8,28 +8,24 @@
 '
 ' ── Visual identity ──────────────────────────────────────────────────────────
 ' The game character is called the "bird" in code, but its visual
-' representation is a PEACOCK — specifically a Peacock in side-profile
-' flying pose.  At 8×8 pixels the two distinguishing features that can be
-' communicated are:
-'   1. Crest  — two short spikes on top of the head (rows 0–1).  This is
-'               the single most recognisable peacock silhouette feature.
-'   2. Tail   — rows 5–6 fan slightly wider than the body to hint at the
-'               peacock train spreading behind the bird in flight.
+' representation is a PEACOCK — front-facing, tail fan fully spread, inspired
+' by the NBC peacock logo.
 '
-' Future work: if a second UDG slot is available, a separate tail tile
-' (UDG "B") could be printed immediately to the right of the bird to show
-' the full peacock fan.  Colour choice on the title screen (cyan/green) also
-' reinforces the peacock identity.
+' The fan radiates upward from a narrow body/neck at the bottom, with
+' alternating feather tips at the top row to suggest the pinwheel of coloured
+' feathers.  The two key elements at 8×8 pixels:
+'   1. Fan   — rows 0–3: alternating tips converging into a solid spread.
+'   2. Body  — rows 4–6: neck narrowing to a small chest and lower body.
 '
 ' Pixel map — 1 = ink, 0 = paper (binary → decimal):
 '
-'   Row 0:  0 1 0 1 0 0 0 0  =  80   crest: two tips  (_X_X____)
-'   Row 1:  0 1 1 1 0 0 0 0  = 112   crest base + head top  (_XXX____)
-'   Row 2:  0 1 1 1 1 0 0 0  = 120   head  (_XXXX___)
-'   Row 3:  1 1 1 1 1 1 1 0  = 254   wings spread — flying pose  (XXXXXXX_)
-'   Row 4:  0 1 1 1 1 0 0 0  = 120   body  (_XXXX___)
-'   Row 5:  0 0 1 1 1 1 0 0  =  60   lower body  (__XXXX__)
-'   Row 6:  0 0 0 1 1 1 0 0  =  28   tail feather hint  (___XXX__)
+'   Row 0:  1 0 1 0 1 0 1 0  = 170   feather tips (X_X_X_X_)
+'   Row 1:  0 1 0 1 0 1 0 0  =  84   feather shafts (_X_X_X__)
+'   Row 2:  0 1 1 1 1 1 1 0  = 126   full fan spread (_XXXXXX_)
+'   Row 3:  0 0 1 1 1 1 0 0  =  60   fan base narrowing (__XXXX__)
+'   Row 4:  0 0 0 1 1 0 0 0  =  24   neck (___XX___)
+'   Row 5:  0 0 0 1 1 1 0 0  =  28   body / chest (___XXX__)
+'   Row 6:  0 0 0 0 1 0 0 0  =   8   lower body (____X___)
 '   Row 7:  0 0 0 0 0 0 0 0  =   0   empty row (visual gap between cells)
 '
 ' Design decision: individual POKE calls are used instead of FOR/READ/DATA.
@@ -46,13 +42,13 @@
 
 SUB LoadBirdUDG()
 
-  POKE USR "A" + 0,  80   ' 01010000 — crest tips (two spikes)
-  POKE USR "A" + 1, 112   ' 01110000 — crest base / head top
-  POKE USR "A" + 2, 120   ' 01111000 — head
-  POKE USR "A" + 3, 254   ' 11111110 — wings spread
-  POKE USR "A" + 4, 120   ' 01111000 — body
-  POKE USR "A" + 5,  60   ' 00111100 — lower body
-  POKE USR "A" + 6,  28   ' 00011100 — tail feather hint
+  POKE USR "A" + 0, 170   ' 10101010 — feather tips (X_X_X_X_)
+  POKE USR "A" + 1,  84   ' 01010100 — feather shafts (_X_X_X__)
+  POKE USR "A" + 2, 126   ' 01111110 — full fan spread (_XXXXXX_)
+  POKE USR "A" + 3,  60   ' 00111100 — fan base narrowing (__XXXX__)
+  POKE USR "A" + 4,  24   ' 00011000 — neck (___XX___)
+  POKE USR "A" + 5,  28   ' 00011100 — body / chest (___XXX__)
+  POKE USR "A" + 6,   8   ' 00001000 — lower body (____X___)
   POKE USR "A" + 7,   0   ' 00000000 — empty (breathing room)
 
 END SUB
