@@ -50,37 +50,42 @@ SUB WaitForMenu()
   LOOP UNTIL INKEY$ <> ""
 END SUB
 
-' ── Main loop ─────────────────────────────────────────────────────────────────
+' ── Main loop (callable from launcher or standalone) ─────────────────────────
 
-DIM menuKey AS STRING
-
-DO
-  ShowMenu()
-
-  ' Wait for a valid key
+SUB RunTestSuite()
+  DIM menuKey AS STRING
   DO
-    PAUSE 1
-    menuKey = INKEY$
-  LOOP UNTIL menuKey = "1" OR menuKey = "2" OR menuKey = "3" OR menuKey = "4"
+    ShowMenu()
+    DO
+      PAUSE 1
+      menuKey = INKEY$
+    LOOP UNTIL menuKey = "1" OR menuKey = "2" OR menuKey = "3" OR menuKey = "4"
 
-  IF menuKey = "1" THEN
-    RunTestBirdUDG()
-    WaitForMenu()
-  END IF
+    IF menuKey = "1" THEN
+      RunTestBirdUDG()
+      WaitForMenu()
+    END IF
 
-  IF menuKey = "2" THEN
-    RunTestTitleRender()
-    WaitForMenu()
-  END IF
+    IF menuKey = "2" THEN
+      RunTestTitleRender()
+      WaitForMenu()
+    END IF
 
-  IF menuKey = "3" THEN
-    RunTestPhysics()
-    WaitForMenu()
-  END IF
+    IF menuKey = "3" THEN
+      RunTestPhysics()
+      WaitForMenu()
+    END IF
 
-  IF menuKey = "4" THEN
-    RunTestPipes()
-    WaitForMenu()
-  END IF
+    IF menuKey = "4" THEN
+      RunTestPipes()
+      WaitForMenu()
+    END IF
+  LOOP
+END SUB
 
-LOOP
+' ── Standalone entry point ────────────────────────────────────────────────────
+' Suppressed when compiled via launcher.bas (#define LAUNCHER_MODE).
+
+#ifndef LAUNCHER_MODE
+RunTestSuite()
+#endif

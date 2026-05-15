@@ -42,46 +42,28 @@
 DIM highScore AS INTEGER   ' best score seen this session; 0 until game loop added
 
 ' =============================================================================
-' Screen initialisation
+' RunFlappySpeccy — full game session (callable from launcher or standalone)
 ' =============================================================================
-' The ROM startup sequence leaves white paper, black ink, and a white border.
-' We override everything explicitly so the program looks the same whether it
-' launches cold (from power-on) or warm (from a RUN in the BASIC editor).
+' Initialises screen and UDG, then loops: title screen → RunGame → repeat.
+' When invoked from launcher.bas, LAUNCHER_MODE suppresses the standalone call
+' below so only this SUB definition is compiled into the launcher binary.
 
-BORDER 0    ' black border — eliminates the white frame around the picture area
-PAPER  0    ' black paper  — background colour for CLS and all future PRINTs
-INK    7    ' white ink    — default foreground; individual PRINTs override this
-BRIGHT 0    ' no bright    — prevents stray bright attributes from prior state
-FLASH  0    ' no flash     — same reason
-
-CLS         ' fill the entire screen with the current PAPER colour (black)
-
-' =============================================================================
-' Load UDG
-' =============================================================================
-' Must happen before ShowTitle because the title screen prints CHR$(144).
-' CHR$(144) = UDG "A" = bird sprite (defined in assets/sprites/bird_udg.bas).
-' Until LoadBirdUDG() is called, CHR$(144) shows a random or default glyph.
-
-LoadBirdUDG()
+SUB RunFlappySpeccy()
+  BORDER 0 : PAPER 0 : INK 7 : BRIGHT 0 : FLASH 0
+  CLS
+  LoadBirdUDG()
+  highScore = 0
+  DO
+    ShowTitle(highScore)
+    RunGame()
+  LOOP
+END SUB
 
 ' =============================================================================
-' Title screen
+' Standalone entry point
 ' =============================================================================
-' ShowTitle blocks until SPACE is pressed, then returns cleanly.
-' We pass highScore so the title can display the all-time best run.
-' (For v0.1 this is always 0; persistence is a later phase.)
+' Suppressed when compiled via launcher.bas (#define LAUNCHER_MODE).
 
-ShowTitle(highScore)
-
-' =============================================================================
-' Main game loop — Phase 3
-' =============================================================================
-' ShowTitle blocks until SPACE, then RunGame runs until the bird hits the
-' floor or Q is pressed.  The outer DO loop returns to the title screen for
-' the next round.  highScore persistence is added in a later phase.
-
-DO
-  ShowTitle(highScore)
-  RunGame()
-LOOP
+#ifndef LAUNCHER_MODE
+RunFlappySpeccy()
+#endif

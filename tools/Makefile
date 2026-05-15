@@ -18,9 +18,11 @@ EMULATOR := $(HOME)/Applications/ZEsarUX.app/Contents/MacOS/zesarux
 EMU_ARGS := --noconfigfile --machine 48k
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
-SRC    := src/game/main.bas
-TAP    := build/flappy_speccy.tap
-DIST   := dist/flappy_speccy.tap
+SRC          := src/game/main.bas
+TAP          := build/flappy_speccy.tap
+DIST         := dist/flappy_speccy.tap
+LAUNCHER_SRC := src/game/launcher.bas
+LAUNCHER_TAP := build/launcher.tap
 
 # ── Compiler flags ─────────────────────────────────────────────────────────────
 # -f tap       : produce a .TAP tape image
@@ -41,6 +43,7 @@ TEST_TAPS := $(patsubst tests/%.bas,build/%.tap,$(TEST_SRCS))
 
 # ── Targets ───────────────────────────────────────────────────────────────────
 .PHONY: all run dist tests clean \
+        build-launcher run-launcher \
         run-test-suite \
         run-test-bird-udg run-test-title-render run-test-physics run-test-pipes
 
@@ -53,6 +56,17 @@ $(TAP): $(SRC)
 run: $(TAP)
 	-pkill -x zesarux 2>/dev/null; sleep 0.5
 	open $(HOME)/Applications/ZEsarUX.app --args $(EMU_ARGS) $(abspath $(TAP))
+
+# ── Launcher ──────────────────────────────────────────────────────────────────
+build-launcher: $(LAUNCHER_TAP)
+
+$(LAUNCHER_TAP): $(LAUNCHER_SRC)
+	@mkdir -p build
+	$(ZXBC) $(LAUNCHER_SRC) $(ZXFLAGS) -o $(LAUNCHER_TAP)
+
+run-launcher: $(LAUNCHER_TAP)
+	-pkill -x zesarux 2>/dev/null; sleep 0.5
+	open $(HOME)/Applications/ZEsarUX.app --args $(EMU_ARGS) $(abspath $(LAUNCHER_TAP))
 
 # ── Test compilation ──────────────────────────────────────────────────────────
 tests: $(TEST_TAPS)
