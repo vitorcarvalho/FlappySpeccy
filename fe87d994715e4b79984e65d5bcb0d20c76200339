@@ -1,0 +1,1 @@
+{"v":4,"author":"vitor.carvalho@sky.uk","week":"2026-05-11","files":{"tools/Makefile":{"ai_del_ai":0,"ai_del_usr":0,"usr_del_usr":0,"usr_del_ai":0,"ai_add":0,"usr_hashes":["d889553c","d889553c","d889553c"],"usr_add":3,"usr_lines":[53,65,69]}},"agents":["user_only"],"source":"hook","orig_sha":"fe87d994715e4b79984e65d5bcb0d20c76200339"}
