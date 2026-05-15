@@ -259,6 +259,107 @@ Status: **Phase 8 complete. Dynamic speed scaling + border-tier indicator live. 
 
 ---
 
+## Optional Improvements
+
+These are standalone, independently implementable polish items. None are required for a shippable game.
+Each item is tagged: **[UI/UX]** for visual/interaction changes, **[CODE]** for refactors and structural changes.
+
+---
+
+### Visual — Tier 1 (High impact, small change)
+
+- [ ] **[UI/UX] Coloured boundary bars** — change ceiling (row 1) to `INK 1 BRIGHT 1` (bright blue = sky) and floor (row 23) to `INK 4 BRIGHT 0` (green = ground). 2-line change in `game.bas`. Instantly communicates world context.
+
+- [ ] **[UI/UX] Bird flap animation** — define a second UDG in slot `B` (`CHR$(145)`) with wings in the "up" position. Alternate `CHR$(144)` / `CHR$(145)` on each flap press in `game.bas`. Files: `assets/sprites/bird_udg.bas`, `game.bas`.
+
+- [ ] **[UI/UX] Pipe caps** — draw the two rows adjacent to the gap (`gap-1` and `gap+pipeGapSize`) with `BRIGHT 1` while keeping the pipe body at `BRIGHT 0`. Same `CHR$(143)` character; the luminance jump reads as a wider cap — the signature Flappy Bird look. File: `pipes.bas`.
+
+- [ ] **[UI/UX] HUD coloured background** — set `PAPER 1` (blue) on row 0 to separate the status bar from the play area. 3-line change in `game.bas`.
+
+### Visual — Tier 2 (Polish)
+
+- [ ] **[UI/UX] Score flash on increment** — apply `FLASH 1` to the score cell for one frame when a point is scored, then `FLASH 0`. Hardware-driven at zero CPU cost. File: `game.bas`.
+
+- [ ] **[UI/UX] Redesign bird UDG as actual bird silhouette** — replace the current "SKY" text-art with a recognisable bird shape (body + beak + tail) in 8×8 pixels. File: `assets/sprites/bird_udg.bas`; update `test_bird_udg.bas` byte assertions.
+
+- [ ] **[UI/UX] Title screen decorative frame** — print a border of solid block characters (`CHR$(143)`) or `=` in a contrasting colour around the content area (rows 0/23, cols 0/31). File: `title.bas`.
+
+- [ ] **[UI/UX] Difficulty options colour-coded** — colour each option in the key guide independently: `1=EASY` in green (`INK 4`), `2=NORMAL` in yellow (`INK 6`), `3=HARD` in red (`INK 2`). Matches the border-tier colour language already in the game. File: `title.bas`.
+
+- [ ] **[UI/UX] Bird sprite on Game Over screen** — print the bird UDG (`CHR$(144)`) in red (`INK 2 FLASH 1`) on the game-over screen before the score, then clear the flash. File: `gameover.bas`.
+
+### Visual — Tier 3 (Bigger effort)
+
+- [ ] **[UI/UX] Animated title screen birds** — cycle the three `CHR$(144)` birds on row 7 through `INK` colours or alternate with `CHR$(145)` (wings-up UDG) inside the `DO/LOOP UNTIL k=" "` wait loop. File: `title.bas`.
+
+- [ ] **[UI/UX] Screen wipe transition on death** — column-by-column `PAPER 0 INK 0` sweep from left to right before `CLS` on game over. Cinematic pause before the game-over screen. Files: `game.bas`, `gameover.bas`.
+
+- [ ] **[UI/UX] Scrolling star/cloud background** — sparse `·` characters in `INK 7 BRIGHT 0` scrolling slower than pipes using `OVER 1` (XOR) mode to avoid attribute clash. Requires a separate background position array and careful timing. File: new `background.bas` module.
+
+---
+
+### Code — Tier 1 (Shrinks code, no behaviour change)
+
+- [ ] **[CODE] Boundary bars: `STRING$` instead of a 32-step loop** — replace the `FOR bc = 0 TO 31` loop in `game.bas` with two single-line PRINTs:
+  ```bas
+  PRINT INK 7; BRIGHT 1; PAPER 0; AT 1,  0; STRING$(32, CHR$(143));
+  PRINT INK 7; BRIGHT 1; PAPER 0; AT 23, 0; STRING$(32, CHR$(143));
+  ```
+  Saves 6 lines, eliminates the `bc` variable declaration, and is faster at runtime (32 individual PRINT AT calls → 1 string operation per bar). File: `game.bas`.
+
+- [ ] **[CODE] Difficulty mapping: replace IF chain with formula** — the 3-line IF chain in `main.bas`:
+  ```bas
+  IF selectedDifficulty = 1 THEN pipeGapSize = 10
+  IF selectedDifficulty = 2 THEN pipeGapSize = 8
+  IF selectedDifficulty = 3 THEN pipeGapSize = 6
+  ```
+  reduces to one line:
+  ```bas
+  pipeGapSize = 12 - (selectedDifficulty * 2)
+  ```
+  Verified: difficulty 1→10, 2→8, 3→6. File: `main.bas`.
+
+- [ ] **[CODE] `CheckCollision()`: eliminate intermediate variables via early returns** — replace the `hit`/`attr`/`inkColor` variable chain with direct early returns:
+  ```bas
+  IF birdRow >= 22 THEN RETURN 1
+  IF (PEEK(22528 + birdRow * 32 + birdCol) BAND 7) = 4 THEN RETURN 1
+  RETURN 0
+  ```
+  Removes 3 local variable declarations; logic becomes linear and self-evident. File: `collision.bas`.
+
+- [ ] **[CODE] Makefile: extract emulator launch into a `define` macro** — each of the 11 `run-*` targets in `tools/Makefile` repeats the same two lines (`pkill` + `open`). Extract into a `define`:
+  ```makefile
+  define run_emu
+  -pkill -x zesarux 2>/dev/null; sleep 0.5
+  open $(HOME)/Applications/ZEsarUX.app --args $(1) $(abspath $(2))
+  endef
+  ```
+  Then each target body becomes `$(call run_emu,$(EMU_ARGS),$(TAP))`. Removes ~11 duplicate lines. File: `tools/Makefile`.
+
+- [ ] **[CODE] Makefile: `EMU_ARGS_128` variable for 128K emulator args** — the 128K run targets hardcode `--noconfigfile --machine 128k` inline; the 48K targets use `$(EMU_ARGS)`. Add:
+  ```makefile
+  EMU_ARGS_128 := --noconfigfile --machine 128k
+  ```
+  and reference it in `run-128k`, `run-launcher-128k`, `run-test-sound-128k`. File: `tools/Makefile`.
+
+### Code — Tier 2 (Readability / maintenance)
+
+- [ ] **[CODE] AY register write helper in `sounds.bas`** — the `#ifdef AY_SOUND` blocks repeat `OUT 65533, reg : OUT 49149, val` pairs ~14 times with no abstraction. A single helper:
+  ```bas
+  SUB AYWrite(reg AS INTEGER, val AS INTEGER)
+    OUT 65533, reg : OUT 49149, val
+  END SUB
+  ```
+  eliminates the duplication and makes the sound routines readable as register-name → value mappings. Sound SUBs are not in the hot path, so the CALL overhead is irrelevant. File: `assets/sounds/sounds.bas`.
+
+- [ ] **[CODE] Update stale `main.bas` header comment** — the top-of-file comment still reads "Version: v0.1 — proof of concept (splash screen only)" and lists game loop, sound, and high score as "NOT here yet". All of those are implemented. The comment is now actively misleading. File: `src/game/main.bas`.
+
+- [ ] **[CODE] Add derivation comment to `SpawnPipe` formula** — `INT(RND * (21 - pipeGapSize)) + 2` is not immediately obvious. A one-line comment explaining the bounds (gap must satisfy `gap + pipeGapSize ≤ 22`, so gap ∈ [2, 22-pipeGapSize]) prevents future accidental breakage. File: `pipes.bas`.
+
+- [ ] **[CODE] Cross-reference the pipe slot count (3) between `pipes.bas` and `game.bas`** — the array is `DIM pipeCol(3)` in `pipes.bas` and the scoring loop is `FOR i = 1 TO 3` in `game.bas`. A comment on each noting the dependency prevents silent divergence if the slot count ever changes. Files: `pipes.bas`, `game.bas`.
+
+---
+
 ## Testing Approach
 
 | Test | File | Status | How |
