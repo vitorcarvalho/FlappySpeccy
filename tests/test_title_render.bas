@@ -48,7 +48,22 @@ SUB RunTestTitleRender()
   ShowTitle(0)
 
   ' ── Phase 2: attribute assertions ─────────────────────────────────────────
-  ' ShowTitle has returned — attribute bytes are still in the attribute file.
+  ' Read attribute bytes BEFORE CLS — CLS would overwrite them with PAPER 0
+  ' INK 7 (= 7) and make every assertion fail.
+  DIM atTitle    AS INTEGER
+  DIM atSubtitle AS INTEGER
+  DIM atBird     AS INTEGER
+  DIM atSep      AS INTEGER
+  DIM atCta      AS INTEGER
+  DIM atHiScore  AS INTEGER
+
+  atTitle    = PEEK(22528 +  2*32 +  9)
+  atSubtitle = PEEK(22528 +  4*32 +  7)
+  atBird     = PEEK(22528 +  7*32 + 14)
+  atSep      = PEEK(22528 + 11*32 +  7)
+  atCta      = PEEK(22528 + 13*32 +  7)
+  atHiScore  = PEEK(22528 + 19*32 +  9)
+
   BORDER 0 : PAPER 0 : INK 7 : BRIGHT 0 : FLASH 0 : CLS
   PRINT BRIGHT 1; INK 6; "TEST: ShowTitle() attrs"
   PRINT INK 5;           "───────────────────────"
@@ -57,12 +72,12 @@ SUB RunTestTitleRender()
   passed = 0
   failed = 0
 
-  AssertAttr("title      r2  c9  attr=70 ", 22528 +  2*32 +  9,  70)
-  AssertAttr("subtitle   r4  c7  attr=5  ", 22528 +  4*32 +  7,   5)
-  AssertAttr("bird UDG   r7  c14 attr=70 ", 22528 +  7*32 + 14,  70)
-  AssertAttr("separator  r11 c7  attr=5  ", 22528 + 11*32 +  7,   5)
-  AssertAttr("CTA        r13 c7  attr=199", 22528 + 13*32 +  7, 199)
-  AssertAttr("hi-score   r19 c9  attr=4  ", 22528 + 19*32 +  9,   4)
+  AssertEq("title      r2  c9  attr=70 ",  70, atTitle)
+  AssertEq("subtitle   r4  c7  attr=5  ",   5, atSubtitle)
+  AssertEq("bird UDG   r7  c14 attr=70 ",  70, atBird)
+  AssertEq("separator  r11 c7  attr=5  ",   5, atSep)
+  AssertEq("CTA        r13 c7  attr=199", 199, atCta)
+  AssertEq("hi-score   r19 c9  attr=4  ",   4, atHiScore)
 
   ' ── Summary ─────────────────────────────────────────────────────────────────
   PRINT
