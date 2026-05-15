@@ -176,6 +176,25 @@ Status: **Phase 8 complete. Dynamic speed scaling + border-tier indicator live. 
 
 ---
 
+## Mute / Unmute ✅ DONE
+
+**Goal:** Let the player silence all sound effects without restarting; default to muted so first launch is quiet.
+
+- [x] `assets/sounds/sounds.bas` — `DIM soundMuted AS INTEGER : soundMuted = 1` (global, muted by default).
+  Each SUB checks the flag: `SoundFlap`/`SoundScore` skip `BEEP` when `soundMuted = 1`.
+  `SoundDie` falls back to `PAUSE 25` (~0.5 s) when muted so the death-flash timing is preserved.
+- [x] `src/game/launcher.bas` — option **3 SOUND: MUTED / ON** added to the launcher menu.
+  Colour-coded: INK 3 (magenta) when muted, INK 4 (green) when on.
+  Toggle: `soundMuted = 1 - soundMuted`; row is redrawn in place (no full CLS).
+- [x] `tests/test_sound.bas` — 4 new assertions (total: 7):
+  - Test 4: `soundMuted` defaults to 1.
+  - Test 5: toggle 1 → 0 (unmute).
+  - Test 6: toggle 0 → 1 (re-mute).
+  - Test 7: `SoundFlap()` callable and returns when unmuted (you hear one chirp).
+- [x] `tests/test_suite.bas` — option 7 label updated to **7 SOUND+MUTE (auto)**.
+
+---
+
 ## Phase 9 — Packaging
 
 - [ ] Build final `.tap` and `.tzx` tape images into `dist/`.
@@ -227,7 +246,7 @@ Status: **Phase 8 complete. Dynamic speed scaling + border-tier indicator live. 
 | Pipe spawning | `tests/test_pipes.bas` | ✅ done | Fully automated; init state, gap bounds, spawn assertions |
 | Collision accuracy | `tests/test_collision.bas` | ✅ done | Automated: safe/floor/POKE-green/POKE-clear — 4 assertions |
 | Medal ranks | `tests/test_gameover.bas` | ✅ done | Automated: boundary values 0/9/10/20/30/40/50 — 7 assertions |
-| Sound smoke test | `tests/test_sound.bas` | ✅ done | Automated: each BEEP SUB callable without crash — 3 assertions |
+| Sound + mute | `tests/test_sound.bas` | ✅ done | Automated: 3 smoke + 4 mute-flag assertions (default, toggle, audible) — 7 total |
 | Difficulty curve | `tests/test_difficulty_curve.bas` | ✅ done | Automated: `GetSpeedTier` + `GetBorderColor` boundary values — 19 assertions |
 | Full play-through | Manual | 🔜 planned | Load release `.tap`, play to score ≥ 10 |
 

@@ -62,7 +62,7 @@
 | `src/game/pipes.bas` | ✅ done | `InitPipes()` / `UpdatePipes()` — 3-slot array, 2-col-wide pipes, difficulty-driven gap (`pipeGapSize` 10/8/6); `pipeScored(3)` tracks awarded points |
 | `src/game/collision.bas` | ✅ done | `CheckCollision()` — floor sentinel (row ≥ 22) + ATTR-based pipe hit (INK 4 = green) |
 | `src/screens/gameover.bas` | ✅ done | `GetMedalRank(score)` (pure, testable) + `ShowGameOver(score)` — medal display, SPACE to retry |
-| `assets/sounds/sounds.bas` | ✅ done | `SoundFlap()` / `SoundScore()` / `SoundDie()` — BEEP-based 48K sound effects |
+| `assets/sounds/sounds.bas` | ✅ done | `soundMuted` global (default 1); `SoundFlap()` / `SoundScore()` / `SoundDie()` — gated on `soundMuted` |
 | `assets/sprites/pipe_tiles.bas` | 🔜 planned | Block graphic character selection |
 
 ---
@@ -165,7 +165,7 @@ spectrum/
 │   │   ├── bird_udg.bas        ✅ LoadBirdUDG() — 8 POKE calls into UDG slot "A"
 │   │   └── pipe_tiles.bas      🔜 Block graphic selection for pipes
 │   └── sounds/
-│       └── sounds.bas          ✅ SoundFlap() / SoundScore() / SoundDie() — BEEP effects
+│       └── sounds.bas          ✅ soundMuted global + SoundFlap/Score/Die — BEEP effects, mute-gated
 │
 ├── build/                      ✅ Compiler output (.tap) — gitignored
 ├── dist/                       ✅ Release tape images

@@ -123,7 +123,7 @@ make run-test-difficulty-curve # automated — speed tier + border colour bounda
 | `run-test-pipes` | `tests/test_pipes.bas` | Fully automated | Pipe init state, gap bounds per difficulty (Easy 2–12, Normal 2–14, Hard 2–16), spawn flag |
 | `run-test-collision` | `tests/test_collision.bas` | Fully automated | Safe position (no hit), floor sentinel (row 22), POKE green attr → hit, restore → no hit |
 | `run-test-gameover` | `tests/test_gameover.bas` | Fully automated | `GetMedalRank`: boundary values 0/9/10/20/30/40/50 → ranks 0/0/1/2/3/4/4 |
-| `run-test-sound` | `tests/test_sound.bas` | Fully automated | `SoundFlap`/`SoundScore`/`SoundDie` each callable without crash (you hear 3 sounds) |
+| `run-test-sound` | `tests/test_sound.bas` | Fully automated | 3 smoke tests (silent, muted by default) + 4 mute-flag assertions; you hear 1 chirp at the end |
 | `run-test-difficulty-curve` | `tests/test_difficulty_curve.bas` | Fully automated | `GetSpeedTier` (9 boundary asserts) + `GetBorderColor` (10 boundary asserts) |
 
 ### Writing a new test

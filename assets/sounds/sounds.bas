@@ -3,9 +3,13 @@
 ' Sound effects — ZX Spectrum 48K BEEP-based.
 '
 ' Exports:
+'   soundMuted    — INTEGER global; 1 = muted (default), 0 = unmuted.
+'                   Set by the launcher menu option 3 (toggle).
+'                   All SUBs check this flag and short-circuit when muted.
 '   SoundFlap()   — short high chirp played when the bird flaps.
 '   SoundScore()  — quick two-note ascending reward when a pipe is cleared.
-'   SoundDie()    — descending sweep played on collision / death.
+'   SoundDie()    — descending sweep on death; falls back to PAUSE 25 when muted
+'                   so the death-flash timing is preserved regardless of mute state.
 '
 ' BEEP syntax (ZX Spectrum ROM / Boriel ZX BASIC):
 '   BEEP duration, note
@@ -30,11 +34,17 @@
 #ifndef SOUNDS_BAS
 #define SOUNDS_BAS
 
+' ── Mute flag ─────────────────────────────────────────────────────────────────
+' 1 = muted (default — avoids surprise noise on first launch).
+' Toggled by the launcher menu (option 3): soundMuted = 1 - soundMuted.
+
+DIM soundMuted AS INTEGER : soundMuted = 1
+
 ' ── Flap chirp — single short high note ──────────────────────────────────────
 ' A5 = 21 semitones above middle C ≈ 880 Hz.  Duration 0.02 s (1 frame @ 50 Hz).
 
 SUB SoundFlap()
-  BEEP 0.02, 21
+  IF soundMuted = 0 THEN BEEP 0.02, 21
 END SUB
 
 ' ── Score reward — two ascending notes ───────────────────────────────────────
@@ -42,19 +52,26 @@ END SUB
 ' Kept short so it doesn't delay the frame after a pipe is cleared.
 
 SUB SoundScore()
-  BEEP 0.05, 12   ' C5
-  BEEP 0.05, 19   ' G5
+  IF soundMuted = 0 THEN
+    BEEP 0.05, 12   ' C5
+    BEEP 0.05, 19   ' G5
+  END IF
 END SUB
 
 ' ── Death jingle — descending chromatic sweep ─────────────────────────────────
 ' Sweeps from A5 (21 semitones) down to C3 (-12 semitones) in steps of 3.
 ' 12 steps × 0.04 s ≈ 0.48 s — plays after collision, before game-over screen.
+' When muted: PAUSE 25 (~0.5 s) preserves the death-flash timing.
 
 SUB SoundDie()
   DIM n AS INTEGER
-  FOR n = 21 TO -12 STEP -3
-    BEEP 0.04, n
-  NEXT n
+  IF soundMuted = 1 THEN
+    PAUSE 25   ' maintain ~0.5 s death pause even when silent
+  ELSE
+    FOR n = 21 TO -12 STEP -3
+      BEEP 0.04, n
+    NEXT n
+  END IF
 END SUB
 
 #endif

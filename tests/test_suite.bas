@@ -12,7 +12,7 @@
 '   4  Pipes          — automated init and spawn state assertions
 '   5  Collision      — automated floor + attr-based pipe hit assertions
 '   6  Game Over      — automated medal rank boundary assertions
-'   7  Sound          — automated smoke test: each BEEP SUB callable without crash
+'   7  Sound + Mute   — automated: each BEEP SUB callable; mute flag default + toggle
 '   8  Difficulty     — automated GetSpeedTier + GetBorderColor boundary assertions
 '
 ' #define SUITE_MODE before including test files suppresses their standalone
@@ -46,7 +46,7 @@ SUB ShowMenu()
   PRINT           INK 7; PAPER 0; AT 12,6; "4  PIPES         (auto)"
   PRINT           INK 7; PAPER 0; AT 14,6; "5  COLLISION     (auto)"
   PRINT           INK 7; PAPER 0; AT 16,6; "6  GAME OVER     (auto)"
-  PRINT           INK 7; PAPER 0; AT 18,6; "7  SOUND         (auto)"
+  PRINT           INK 7; PAPER 0; AT 18,6; "7  SOUND+MUTE    (auto)"
   PRINT           INK 7; PAPER 0; AT 20,6; "8  DIFFICULTY    (auto)"
   PRINT           INK 5; PAPER 0; AT 22,6; "0  BACK TO LAUNCHER"
   PRINT BRIGHT 1; INK 5; PAPER 0; AT 23,4; "PRESS 1-8 TO SELECT TEST"
