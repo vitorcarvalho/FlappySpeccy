@@ -1,0 +1,49 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build",
+      "detail": "Compile src/game/main.bas → build/flappy_speccy.tap via zxbc",
+      "type": "shell",
+      "command": "zxbc",
+      "args": [
+        "src/game/main.bas",
+        "--tap",
+        "-o", "build/flappy_speccy.tap",
+        "--optimize", "2"
+      ],
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      }
+    },
+    {
+      "label": "Run",
+      "detail": "Build then launch build/flappy_speccy.tap in Fuse emulator",
+      "type": "shell",
+      "command": "fuse",
+      "args": ["build/flappy_speccy.tap"],
+      "dependsOn": "Build",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Clean",
+      "detail": "Remove compiled artefacts from build/",
+      "type": "shell",
+      "command": "rm",
+      "args": ["-f", "build/*.tap", "build/*.z80", "build/*.asm"],
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      }
+    }
+  ]
+}
