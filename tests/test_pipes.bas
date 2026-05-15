@@ -7,12 +7,12 @@
 '
 ' Test cases:
 '   1. InitPipes()      — pipeActive(1) = 1  (first pipe active)
-'   2. InitPipes()      — pipeCol(1) = 31    (starts at right edge)
-'   3. InitPipes()      — pipeGap(1) >= 2    (lower bound of random gap)
-'   4. InitPipes()      — pipeGap(1) <= 15   (upper bound of random gap)
+'   2. InitPipes()      — pipeCol(1) = 30    (left edge; pipe is 2 cols wide)
+'   3. InitPipes()      — pipeGap(1) >= 2    (lower bound of 6-row gap start)
+'   4. InitPipes()      — pipeGap(1) <= 15   (upper bound of 6-row gap start)
 '   5. InitPipes()      — pipeActive(2) = 0  (remaining slots inactive)
 '   6. SpawnPipe(2)     — pipeActive(2) = 1  (slot becomes active)
-'   7. SpawnPipe(2)     — pipeCol(2) = 31    (spawns at right edge)
+'   7. SpawnPipe(2)     — pipeCol(2) = 30    (left edge of 2-wide pipe)
 '   8. SpawnPipe(2)     — pipeGap(2) >= 2    (random gap lower bound)
 '   9. SpawnPipe(2)     — pipeGap(2) <= 15   (random gap upper bound)
 '
@@ -40,7 +40,7 @@ SUB RunTestPipes()
   ' ── Test group 1: InitPipes ───────────────────────────────────────────────
   InitPipes()
   AssertEq("init: pipeActive(1) = 1",  1,  pipeActive(1))
-  AssertEq("init: pipeCol(1) = 31",    31, pipeCol(1))
+  AssertEq("init: pipeCol(1) = 30",    30, pipeCol(1))
   AssertGT("init: pipeGap(1) >= 2",    1,  pipeGap(1))
   AssertLTE("init: pipeGap(1) <= 15", 15,  pipeGap(1))
   AssertEq("init: pipeActive(2) = 0",  0,  pipeActive(2))
@@ -48,7 +48,7 @@ SUB RunTestPipes()
   ' ── Test group 2: SpawnPipe ───────────────────────────────────────────────
   SpawnPipe(2)
   AssertEq("spawn: pipeActive(2) = 1",  1,  pipeActive(2))
-  AssertEq("spawn: pipeCol(2) = 31",   31,  pipeCol(2))
+  AssertEq("spawn: pipeCol(2) = 30",   30,  pipeCol(2))
   AssertGT("spawn: pipeGap(2) >= 2",    1,  pipeGap(2))
   AssertLTE("spawn: pipeGap(2) <= 15", 15,  pipeGap(2))
 
