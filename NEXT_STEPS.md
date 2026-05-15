@@ -41,7 +41,7 @@ Status: **Phase 8 complete. Dynamic speed scaling + border-tier indicator live. 
 - [x] `tests/assert_helpers.bas` — shared `AssertEq`, `AssertGT`, `AssertLTE`, `AssertAttr` + `passed`/`failed` counters; include-guarded
 - [x] `tests/test_bird_udg.bas` — fully automated; PEEKs all 8 UDG bytes; wrapped in `RunTestBirdUDG()` SUB
 - [x] `tests/test_title_render.bas` — semi-automated; snapshots attributes **before** `CLS` to avoid overwrite; wrapped in `RunTestTitleRender()` SUB
-- [x] `tests/test_physics.bas` — fully automated; 5 assertions (init, gravity, flap, vel clamp, floor clamp); wrapped in `RunTestPhysics()` SUB
+- [x] `tests/test_physics.bas` — fully automated; 6 assertions (init, gravity, flap, vel clamp, floor clamp, ceiling clamp); wrapped in `RunTestPhysics()` SUB
 - [x] `tests/test_suite.bas` — menu-driven unified runner; `#define SUITE_MODE` suppresses standalone entry points; press 1/2/3 to run, any key to return to menu
 - [x] `make tests` — compiles all 4 TAPs from repo root
 - [x] `make run-test-suite` / `make run-test-bird-udg` / `make run-test-title-render` / `make run-test-physics`
@@ -52,7 +52,7 @@ Status: **Phase 8 complete. Dynamic speed scaling + border-tier indicator live. 
 
 - [x] `src/game/physics.bas` — `InitPhysics()`, `UpdatePhysics(flap%)`; global `birdRow`, `birdVel`, `birdCol`
   - Each tick: `birdVel = birdVel + 1` (gravity); clamped to `[-3, +3]`
-  - `birdRow = birdRow + birdVel`; clamped to `[1, 22]`
+  - `birdRow = birdRow + birdVel`; clamped to `[2, 22]` (row 1 = white ceiling bar)
   - On flap: `birdVel = -3`
 - [x] `src/game/game.bas` — `RunGame()` with 50 Hz `PAUSE 1` loop; SPACE = flap, Q = quit; floor hit = red flash then return to title
 - [x] `src/game/main.bas` — updated to `DO / ShowTitle / RunGame / LOOP`
@@ -196,15 +196,7 @@ Status: **Phase 8 complete. Dynamic speed scaling + border-tier indicator live. 
 
 ---
 
-## Phase 9 — Packaging
-
-- [ ] Build final `.tap` and `.tzx` tape images into `dist/`.
-- [ ] Verify on real hardware (or ZXSpin for Windows) if possible.
-- [ ] Write `docs/references.md` with final memory map, UDG layout, variable table.
-
----
-
-## Phase 10 — ZX Spectrum 128K Support
+## Phase 11 — ZX Spectrum 128K Support
 
 **Goal:** leverage the AY-3-8912 sound chip and distribute a dedicated 128K build alongside the 48K release. The 48K TAP must remain fully functional and unmodified.
 
@@ -236,6 +228,34 @@ Status: **Phase 8 complete. Dynamic speed scaling + border-tier indicator live. 
 
 ---
 
+## Boundary Bars (Ceiling & Floor) ✅ DONE
+
+**Goal:** Make the play-area limits visually obvious so the bird cannot appear to fly off-screen.
+
+- [x] `src/game/game.bas` — draws 32 white solid-block chars (`CHR$(143)`, `INK 7 BRIGHT 1`) at row 1 (ceiling) and row 23 (floor) after `CLS`. Drawn once per session; never erased.
+- [x] `src/game/physics.bas` — ceiling clamp tightened from row 1 → row 2 so the bird never enters the ceiling bar. Floor clamp unchanged (row 22 = last play row, one above the floor bar at 23).
+- [x] `src/game/pipes.bas` — `ErasePipe` changed from `FOR r = 1 TO 22` → `FOR r = 2 TO 22`; `DrawPipe` top body changed from `FOR r = 1 TO gap-1` → `FOR r = 2 TO gap-1`. Ceiling bar is never overwritten by a scrolling pipe.
+- [x] `tests/test_physics.bas` — Test 6 added: ceiling clamp — 10 consecutive flap ticks → `birdRow >= 2` (total 6 assertions).
+
+**Screen zone map after this change:**
+
+| Row | Zone |
+|---|---|
+| 0 | HUD (`SPC=FLAP` · score · `Q=QUIT`) |
+| 1 | **Ceiling bar** — white solid blocks |
+| 2–22 | Play area — bird, pipes, open air |
+| 23 | **Floor bar** — white solid blocks |
+
+---
+
+## Phase 10 — Packaging
+
+- [ ] Build final `.tap` and `.tzx` tape images into `dist/`.
+- [ ] Verify on real hardware (or ZXSpin for Windows) if possible.
+- [ ] Write `docs/references.md` with final memory map, UDG layout, variable table.
+
+---
+
 ## Testing Approach
 
 | Test | File | Status | How |
@@ -243,7 +263,7 @@ Status: **Phase 8 complete. Dynamic speed scaling + border-tier indicator live. 
 | Unified suite | `tests/test_suite.bas` | ✅ done | Menu-driven runner; all tests from one TAP |
 | UDG memory integrity | `tests/test_bird_udg.bas` | ✅ done | Fully automated PEEK assertions |
 | Title screen attributes | `tests/test_title_render.bas` | ✅ done | Semi-automated; 9 attribute assertions incl. mute indicator (row 21) |
-| Physics unit test | `tests/test_physics.bas` | ✅ done | Fully automated; gravity, flap, clamp assertions |
+| Physics unit test | `tests/test_physics.bas` | ✅ done | Fully automated; gravity, flap, floor clamp, ceiling clamp — 6 assertions |
 | Pipe spawning | `tests/test_pipes.bas` | ✅ done | Fully automated; init state, gap bounds, spawn assertions |
 | Collision accuracy | `tests/test_collision.bas` | ✅ done | Automated: safe/floor/POKE-green/POKE-clear — 4 assertions |
 | Medal ranks | `tests/test_gameover.bas` | ✅ done | Automated: boundary values 0/9/10/20/30/40/50 — 7 assertions |

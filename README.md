@@ -31,6 +31,7 @@ Faithful ZX Spectrum adaptation of the Flappy Bird mechanic:
 - **Score** — increments each time a pipe pair is cleared; displayed in the border area.
 - **Collision** — detected when the bird occupies the same cell as a pipe or the floor/ceiling.
 - **Difficulty** — selected on the title screen (1=Easy/2=Normal/3=Hard); controls pipe gap height (10/8/6 rows). Speed increases every 5 points; border colour shifts at 10/20/30/40.
+- **Boundary bars** — a white solid-block bar at the top (row 1) and bottom (row 23) of the play area marks the ceiling and floor. The bird is clamped to rows 2–22 and can never enter the bars.
 - **Sound** — BEEP effects (flap, score, death). Toggle mute with **M** on the title screen (default: muted). Unmuted = green indicator; muted = magenta.
 
 ### Controls
@@ -105,7 +106,7 @@ make run-test-suite    # menu: press 1/2/3/4/5/6 to select, any key to return to
 ```sh
 make run-test-bird-udg        # automated — verifies UDG byte values via PEEK
 make run-test-title-render    # semi-automated — renders title, then checks screen attributes
-make run-test-physics         # automated — gravity, flap, velocity clamp, floor clamp
+make run-test-physics         # automated — gravity, flap, velocity clamp, floor/ceiling clamp
 make run-test-pipes           # automated — pipe init state, gap bounds, spawn state
 make run-test-collision       # automated — safe/floor/pipe-hit/pipe-clear assertions
 make run-test-gameover        # automated — medal rank boundary assertions
@@ -120,7 +121,7 @@ make run-test-difficulty-curve # automated — speed tier + border colour bounda
 | `run-test-suite` | `tests/test_suite.bas` | Menu-driven | Unified runner — all tests from one TAP |
 | `run-test-bird-udg` | `tests/test_bird_udg.bas` | Fully automated | Calls `LoadBirdUDG()`, PEEKs all 8 UDG bytes, compares against expected pixel map |
 | `run-test-title-render` | `tests/test_title_render.bas` | Semi-automated (press SPACE once) | Renders title screen, snapshots 9 attribute cells **before** `CLS` (difficulty rows + mute indicator row 21), then asserts ink/paper/bright/flash |
-| `run-test-physics` | `tests/test_physics.bas` | Fully automated | Init state, gravity fall, flap impulse, velocity clamp (≤3), floor clamp (≤22) |
+| `run-test-physics` | `tests/test_physics.bas` | Fully automated | Init state, gravity fall, flap impulse, velocity clamp (≤3), floor clamp (≤22), ceiling clamp (≥2) — 6 assertions |
 | `run-test-pipes` | `tests/test_pipes.bas` | Fully automated | Pipe init state, gap bounds per difficulty (Easy 2–12, Normal 2–14, Hard 2–16), spawn flag |
 | `run-test-collision` | `tests/test_collision.bas` | Fully automated | Safe position (no hit), floor sentinel (row 22), POKE green attr → hit, restore → no hit |
 | `run-test-gameover` | `tests/test_gameover.bas` | Fully automated | `GetMedalRank`: boundary values 0/9/10/20/30/40/50 → ranks 0/0/1/2/3/4/4 |

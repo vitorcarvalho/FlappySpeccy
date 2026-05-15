@@ -8,15 +8,15 @@
 '                            pass 1 to apply flap impulse, 0 for gravity only
 '
 ' Global state (declared here; accessible everywhere via #include chain):
-'   birdRow  — current row  (clamped 1–22)
+'   birdRow  — current row  (clamped 2–22; row 1 = ceiling bar, row 23 = floor bar)
 '   birdVel  — velocity in rows/tick, positive = downward (clamped -3..+3)
 '   birdCol  — fixed column (4); never changes
 '
 ' Physics model:
 '   Gravity adds +1 to birdVel each tick (positive = downward, ZX row order).
 '   A flap sets birdVel = -3 (upward impulse), overriding current velocity.
-'   birdRow is updated by birdVel then clamped to the play area (rows 1–22).
-'   Row 0 is reserved for HUD; row 23 is the floor sentinel used by game.bas.
+'   birdRow is updated by birdVel then clamped to the play area (rows 2–22).
+'   Row 0 is the HUD; row 1 is the ceiling bar; row 23 is the floor bar.
 '
 ' Design decision — UpdatePhysics() takes a flap parameter instead of reading
 ' INKEY$ directly.  This keeps physics testable: tests call UpdatePhysics(0)
@@ -50,8 +50,8 @@ SUB UpdatePhysics(flap AS INTEGER)
   ' Update position
   birdRow = birdRow + birdVel
 
-  ' Clamp to play area (row 1 = ceiling, row 22 = floor)
-  IF birdRow <  1 THEN birdRow =  1
+  ' Clamp to play area (row 2 = first row below ceiling bar, row 22 = last row above floor bar)
+  IF birdRow <  2 THEN birdRow =  2
   IF birdRow > 22 THEN birdRow = 22
 END SUB
 

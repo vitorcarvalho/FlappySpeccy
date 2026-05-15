@@ -58,7 +58,7 @@
 | `assets/sprites/bird_udg.bas` | ✅ done | `LoadBirdUDG()` — POKEs 8 bytes into UDG slot "A" ("SKY" pixel-art glyph) |
 | `src/game/physics.bas` | ✅ done | `InitPhysics()` / `UpdatePhysics(flap%)` — gravity accumulator, velocity clamp, floor/ceiling clamp |
 | `src/game/difficulty.bas` | ✅ done | `GetSpeedTier(s)` / `GetBorderColor(s)` — pure difficulty-curve helpers (no I/O) |
-| `src/game/game.bas` | ✅ done | `RunGame()` — 50 Hz render loop, 25 Hz physics tick, collision, scoring, HUD, dynamic PAUSE speed, border-tier BORDER, sound, death jingle |
+| `src/game/game.bas` | ✅ done | `RunGame()` — 50 Hz render loop, 25 Hz physics tick, collision, scoring, HUD, white ceiling/floor bars (rows 1/23), dynamic PAUSE speed, border-tier BORDER, sound, death jingle |
 | `src/game/pipes.bas` | ✅ done | `InitPipes()` / `UpdatePipes()` — 3-slot array, 2-col-wide pipes, difficulty-driven gap (`pipeGapSize` 10/8/6); `pipeScored(3)` tracks awarded points |
 | `src/game/collision.bas` | ✅ done | `CheckCollision()` — floor sentinel (row ≥ 22) + ATTR-based pipe hit (INK 4 = green) |
 | `src/screens/gameover.bas` | ✅ done | `GetMedalRank(score)` (pure, testable) + `ShowGameOver(score)` — medal display, SPACE to retry |
@@ -70,7 +70,7 @@
 ## 4. Game State
 
 ```basic
-DIM birdRow  AS INTEGER   ' current row  (0-22)
+DIM birdRow  AS INTEGER   ' current row  (2-22; row 1 = ceiling bar, row 23 = floor bar)
 DIM birdVel  AS INTEGER   ' vertical velocity (-3 to +3)
 DIM score    AS INTEGER   ' pipes cleared
 DIM gameOver AS INTEGER   ' 0=playing, 1=dead

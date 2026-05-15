@@ -19,8 +19,8 @@
 ' Pipe visual:
 '   CHR$(143) = solid block graphic (ZX Spectrum mosaic char, all quadrants set)
 '   INK 4 = green.  Pipe is 2 columns wide.
-'   Top body: rows 1..(gap-1).  Bottom body: rows (gap+pipeGapSize)..22.
-'   Gap rows are left blank.  Row 0 = HUD; row 23 = status bar.
+'   Top body: rows 2..(gap-1).  Bottom body: rows (gap+pipeGapSize)..22.
+'   Gap rows are left blank.  Row 0 = HUD; row 1 = ceiling bar; row 23 = floor bar.
 '
 ' Spawn trigger:
 '   A new pipe is spawned in the first free slot when the rightmost active
@@ -46,8 +46,8 @@ SUB ErasePipe(slot AS INTEGER)
   DIM c AS INTEGER
   c = pipeCol(slot)
   IF c >= 0 AND c <= 30 THEN
-    FOR r = 1 TO 22
-      PRINT PAPER 0; INK 0; AT r, c; "  "   ' two spaces = 2 columns
+    FOR r = 2 TO 22      ' rows 2–22 only — row 1 = ceiling bar (must not erase)
+      PRINT PAPER 0; INK 0; AT r, c; "  ";  ' trailing ; suppresses newline/scroll at row 22
     NEXT r
   END IF
 END SUB
@@ -61,11 +61,11 @@ SUB DrawPipe(slot AS INTEGER)
   c   = pipeCol(slot)
   gap = pipeGap(slot)
   IF c >= 0 AND c <= 30 THEN
-    FOR r = 1 TO gap - 1
-      PRINT PAPER 0; INK 4; AT r, c; CHR$(143); CHR$(143)
+    FOR r = 2 TO gap - 1    ' start at row 2 — row 1 = ceiling bar (must not overwrite)
+      PRINT PAPER 0; INK 4; AT r, c; CHR$(143); CHR$(143);  ' ; suppresses newline/scroll
     NEXT r
     FOR r = gap + pipeGapSize TO 22          ' gap height set by difficulty
-      PRINT PAPER 0; INK 4; AT r, c; CHR$(143); CHR$(143)
+      PRINT PAPER 0; INK 4; AT r, c; CHR$(143); CHR$(143);  ' ; suppresses newline/scroll
     NEXT r
   END IF
 END SUB

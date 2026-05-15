@@ -1,12 +1,18 @@
 ' =============================================================================
 ' src/game/game.bas
 ' Core game loop — Phase 8: physics + pipes + collision + scoring + sound +
-'                           dynamic speed + border tier indicator.
+'                           dynamic speed + border tier indicator + boundary bars.
 '
 ' Exports:
 '   RunGame()  — runs one game session; returns when Q is pressed or the
-'                bird collides with a pipe or the floor (row 22).
+'                bird collides with a pipe or the floor boundary.
 '   score      — INTEGER global; final score readable by main.bas after return.
+'
+' Screen layout during play:
+'   Row  0     HUD — "SPC=FLAP" | score | "Q=QUIT"
+'   Row  1     Ceiling bar — 32 white solid blocks (CHR$(143), INK 7 BRIGHT 1)
+'   Rows 2–22  Play area — bird, pipes, open air
+'   Row 23     Floor bar  — 32 white solid blocks (CHR$(143), INK 7 BRIGHT 1)
 '
 ' Depends on (via the #include chain in main.bas):
 '   difficulty.bas — GetSpeedTier(s), GetBorderColor(s) — pure speed/border helpers
@@ -58,6 +64,7 @@ SUB RunGame()
   DIM i           AS INTEGER   ' scoring loop index
   DIM pauseDelay  AS INTEGER   ' PAUSE ticks per frame (4=slow … 1=fast)
   DIM borderColor AS INTEGER   ' current border colour index
+  DIM bc          AS INTEGER   ' column index for boundary bar draw loop
 
   ' ── Initialise ──────────────────────────────────────────────────────────────
   CLS
@@ -79,8 +86,19 @@ SUB RunGame()
   PRINT INK 6; BRIGHT 1; PAPER 0; AT 0, 14; "0"
   PRINT INK 5; BRIGHT 0; PAPER 0; AT 0, 25; "Q=QUIT"
 
+  ' ── Boundary bars (drawn once; never erased by pipes or bird) ─────────────
+  ' CHR$(143) = solid block (all pixels set).  White (INK 7 BRIGHT 1) ensures
+  ' the bars are distinct from green pipes and yellow bird.
+  ' Ceiling: row 1 (first row below HUD).  Floor: row 23 (last screen row).
+  ' ErasePipe and the bird-erase PRINT operate only on rows 2–22, so the bars
+  ' remain intact for the entire session.
+  FOR bc = 0 TO 31
+    PRINT INK 7; BRIGHT 1; PAPER 0; AT 1,  bc; CHR$(143);  ' ; prevents scroll at (1,31)
+    PRINT INK 7; BRIGHT 1; PAPER 0; AT 23, bc; CHR$(143);  ' ; prevents scroll at (23,31)
+  NEXT bc
+
   ' ── Initial draw ────────────────────────────────────────────────────────────
-  PRINT INK 6; BRIGHT 1; PAPER 0; AT birdRow, birdCol; CHR$(144)
+  PRINT INK 6; BRIGHT 1; PAPER 0; AT birdRow, birdCol; CHR$(144);  ' ; suppresses newline/scroll
 
   ' ── Game loop (~50 Hz) ──────────────────────────────────────────────────────
   DO
@@ -97,7 +115,7 @@ SUB RunGame()
     IF key = " " THEN flapPending = 1
 
     ' Erase bird at previous position before moving
-    PRINT INK 0; PAPER 0; AT prevRow, birdCol; " "
+    PRINT INK 0; PAPER 0; AT prevRow, birdCol; " ";  ' ; suppresses newline/scroll
 
     ' Physics runs every 2 frames (25 Hz) — halves fall/flap speed
     physTick = 1 - physTick
@@ -133,13 +151,13 @@ SUB RunGame()
     IF CheckCollision() = 1 THEN gameOver = 1
 
     ' Draw bird last — always on top of any pipe column
-    PRINT INK 6; BRIGHT 1; PAPER 0; AT birdRow, birdCol; CHR$(144)
+    PRINT INK 6; BRIGHT 1; PAPER 0; AT birdRow, birdCol; CHR$(144);  ' ; suppresses newline/scroll
 
   LOOP UNTIL gameOver = 1
 
   ' ── Death flash + jingle (skipped on clean Q-quit) ─────────────────────────
   IF quitGame = 0 THEN
-    PRINT INK 2; BRIGHT 1; FLASH 1; PAPER 0; AT birdRow, birdCol; CHR$(144)
+    PRINT INK 2; BRIGHT 1; FLASH 1; PAPER 0; AT birdRow, birdCol; CHR$(144);  ' ; suppresses newline/scroll
     SoundDie()   ' descending sweep ~0.5 s — doubles as the death pause
     FLASH 0
     BRIGHT 0

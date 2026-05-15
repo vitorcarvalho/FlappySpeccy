@@ -12,6 +12,7 @@
 '                        → birdRow rises to 9 from row 11
 '   4. Velocity clamp  — 10 gravity-only ticks → birdVel never exceeds 3
 '   5. Floor clamp     — 20 gravity-only ticks → birdRow never exceeds 22
+'   6. Ceiling clamp   — 10 flap-every-tick ticks → birdRow never goes below 2
 '
 ' Compile:  make tests
 ' Run:      make run-test-physics
@@ -67,6 +68,15 @@ SUB RunTestPhysics()
     UpdatePhysics(0)
   NEXT i
   AssertLTE("floor clamp: birdRow <= 22", 22, birdRow)
+
+  ' ── Test 6: Ceiling clamp (min row 2) ─────────────────────────────────────
+  ' Flap every tick for 10 ticks — bird should be pushed hard toward the ceiling.
+  ' birdRow must stay >= 2 (row 1 is the ceiling bar; bird must not enter it).
+  InitPhysics()
+  FOR i = 1 TO 10
+    UpdatePhysics(1)
+  NEXT i
+  AssertGT("ceil clamp: birdRow >= 2  ", 1, birdRow)
 
   ' ── Summary ─────────────────────────────────────────────────────────────────
   PRINT
