@@ -40,6 +40,9 @@
 '   portable — it reads the live UDG base pointer from the system variables.
 ' =============================================================================
 
+#ifndef BIRD_UDG_BAS
+#define BIRD_UDG_BAS
+
 SUB LoadBirdUDG()
 
   POKE USR "A" + 0, 170   ' 10101010 — feather tips (X_X_X_X_)
@@ -52,3 +55,5 @@ SUB LoadBirdUDG()
   POKE USR "A" + 7,   0   ' 00000000 — empty (breathing room)
 
 END SUB
+
+#endif

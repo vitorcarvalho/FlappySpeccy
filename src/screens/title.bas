@@ -32,6 +32,9 @@
 ' This keeps the SUB reusable (e.g. returning to title after game over).
 ' =============================================================================
 
+#ifndef TITLE_BAS
+#define TITLE_BAS
+
 SUB ShowTitle(score AS INTEGER)
 
   ' ── Title ─────────────────────────────────────────────────────────────────
@@ -80,3 +83,5 @@ SUB ShowTitle(score AS INTEGER)
   BRIGHT 0
 
 END SUB
+
+#endif

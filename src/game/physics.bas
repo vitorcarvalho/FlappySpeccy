@@ -23,6 +23,9 @@
 ' or UpdatePhysics(1) without needing real keyboard input.
 ' =============================================================================
 
+#ifndef PHYSICS_BAS
+#define PHYSICS_BAS
+
 DIM birdRow AS INTEGER
 DIM birdVel AS INTEGER
 DIM birdCol AS INTEGER
@@ -51,3 +54,5 @@ SUB UpdatePhysics(flap AS INTEGER)
   IF birdRow <  1 THEN birdRow =  1
   IF birdRow > 22 THEN birdRow = 22
 END SUB
+
+#endif

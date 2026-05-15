@@ -35,69 +35,46 @@
 ' Run:      make run-test-title-render
 ' =============================================================================
 
+#include "assert_helpers.bas"
 #include "../assets/sprites/bird_udg.bas"
 #include "../src/screens/title.bas"
 
-' ── Test counters ─────────────────────────────────────────────────────────────
-DIM passed AS INTEGER
-DIM failed AS INTEGER
+SUB RunTestTitleRender()
+  ' ── Phase 1: render the title screen ──────────────────────────────────────
+  ' Identical setup to main.bas so the test exercises what the player sees.
+  ' ShowTitle blocks until SPACE is pressed.
+  BORDER 0 : PAPER 0 : INK 7 : BRIGHT 0 : FLASH 0 : CLS
+  LoadBirdUDG()
+  ShowTitle(0)
 
-' ── AssertAttr ────────────────────────────────────────────────────────────────
-' PEEKs the attribute byte at addr and compares with expected.
-SUB AssertAttr(label AS STRING, addr AS INTEGER, expected AS INTEGER)
-  DIM got AS INTEGER
-  got = PEEK(addr)
-  IF expected = got THEN
-    PRINT INK 4; "PASS "; INK 7; label
-    passed = passed + 1
+  ' ── Phase 2: attribute assertions ─────────────────────────────────────────
+  ' ShowTitle has returned — attribute bytes are still in the attribute file.
+  BORDER 0 : PAPER 0 : INK 7 : BRIGHT 0 : FLASH 0 : CLS
+  PRINT BRIGHT 1; INK 6; "TEST: ShowTitle() attrs"
+  PRINT INK 5;           "───────────────────────"
+  PRINT
+
+  passed = 0
+  failed = 0
+
+  AssertAttr("title      r2  c9  attr=70 ", 22528 +  2*32 +  9,  70)
+  AssertAttr("subtitle   r4  c7  attr=5  ", 22528 +  4*32 +  7,   5)
+  AssertAttr("bird UDG   r7  c14 attr=70 ", 22528 +  7*32 + 14,  70)
+  AssertAttr("separator  r11 c7  attr=5  ", 22528 + 11*32 +  7,   5)
+  AssertAttr("CTA        r13 c7  attr=199", 22528 + 13*32 +  7, 199)
+  AssertAttr("hi-score   r19 c9  attr=4  ", 22528 + 19*32 +  9,   4)
+
+  ' ── Summary ─────────────────────────────────────────────────────────────────
+  PRINT
+  IF failed = 0 THEN
+    PRINT BRIGHT 1; INK 4; "ALL "; passed; " TESTS PASSED"
   ELSE
-    PRINT INK 2; "FAIL "; INK 7; label
-    PRINT INK 2; "     exp="; expected; "  got="; got
-    failed = failed + 1
+    PRINT BRIGHT 1; INK 2; failed; " FAILED  "; INK 4; passed; " PASSED"
   END IF
+
 END SUB
 
-' ── Phase 1: render the title screen ─────────────────────────────────────────
-' Identical setup to main.bas so the test exercises exactly what the player sees.
-BORDER 0 : PAPER 0 : INK 7 : BRIGHT 0 : FLASH 0 : CLS
-LoadBirdUDG()
-ShowTitle(0)   ' ← blocks until SPACE is pressed
-
-' ── Phase 2: attribute assertions ────────────────────────────────────────────
-' ShowTitle has returned — screen attribute bytes are still in place.
-' Overwrite the display with test output.
-BORDER 0 : PAPER 0 : INK 7 : BRIGHT 0 : FLASH 0 : CLS
-PRINT BRIGHT 1; INK 6; "TEST: ShowTitle() attrs"
-PRINT INK 5;           "───────────────────────"
-PRINT
-
-passed = 0
-failed = 0
-
-' ── Title: "FLAPPY SPECCY"  AT 2,9  INK 6 BRIGHT 1 PAPER 0  → 70
-AssertAttr("title      r2  c9  attr=70 ", 22528 + 2*32 +  9,  70)
-
-' ── Subtitle: "A ZX SPECTRUM GAME"  AT 4,7  INK 5 PAPER 0  → 5
-AssertAttr("subtitle   r4  c7  attr=5  ", 22528 + 4*32 +  7,   5)
-
-' ── Bird UDG CHR$(144)×3  AT 7,14  INK 6 BRIGHT 1 PAPER 0  → 70
-AssertAttr("bird UDG   r7  c14 attr=70 ", 22528 + 7*32 + 14,  70)
-
-' ── Separator  AT 11,7  INK 5 PAPER 0  → 5
-AssertAttr("separator  r11 c7  attr=5  ", 22528 +11*32 +  7,   5)
-
-' ── CTA "PRESS SPACE TO FLY"  AT 13,7  INK 7 BRIGHT 1 FLASH 1 PAPER 0  → 199
-AssertAttr("CTA        r13 c7  attr=199", 22528 +13*32 +  7, 199)
-
-' ── High score  AT 19,9  INK 4 PAPER 0  → 4
-AssertAttr("hi-score   r19 c9  attr=4  ", 22528 +19*32 +  9,   4)
-
-' ── Summary ───────────────────────────────────────────────────────────────────
-PRINT
-IF failed = 0 THEN
-  PRINT BRIGHT 1; INK 4; "ALL "; passed; " TESTS PASSED"
-ELSE
-  PRINT BRIGHT 1; INK 2; failed; " FAILED  "; INK 4; passed; " PASSED"
-END IF
-
+#ifndef SUITE_MODE
+RunTestTitleRender()
 PAUSE 0
+#endif
