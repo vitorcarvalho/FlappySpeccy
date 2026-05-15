@@ -1,0 +1,1 @@
+{"v":4,"author":"vitor.carvalho@sky.uk","week":"2026-05-11","files":{"README.md":{"ai_del_ai":0,"ai_del_usr":0,"usr_del_usr":5,"usr_del_ai":0,"ai_add":0,"usr_hashes":["470bf490","a438b5f9","6885d805","c6bb3c7d","92c4081d","fe56b78a"],"usr_add":6,"usr_lines":[33,34,112,122,158,183]}},"agents":["user_only"],"source":"hook","orig_sha":"f056e785e3262f3e112dc837a8e585f7cc1f6cda"}
