@@ -11,13 +11,13 @@
 '
 ' Global state (arrays are 1-based in Boriel/Sinclair BASIC):
 '   pipeCol(3)    — left-edge column (0–30); -1 = off-screen; pipe is 2 cols wide
-'   pipeGap(3)    — row where the 6-row gap starts (2–15)
+'   pipeGap(3)    — row where the 8-row gap starts (2–13)
 '   pipeActive(3) — 1 = active, 0 = inactive
 '
 ' Pipe visual:
 '   CHR$(143) = solid block graphic (ZX Spectrum mosaic char, all quadrants set)
 '   INK 4 = green.  Pipe is 2 columns wide.
-'   Top body: rows 1..(gap-1).  Bottom body: rows (gap+6)..22.  Gap = 6 rows.
+'   Top body: rows 1..(gap-1).  Bottom body: rows (gap+8)..22.  Gap = 8 rows.
 '   Gap rows are left blank.  Row 0 = HUD; row 23 = status bar.
 '
 ' Spawn trigger:
@@ -60,7 +60,7 @@ SUB DrawPipe(slot AS INTEGER)
     FOR r = 1 TO gap - 1
       PRINT PAPER 0; INK 4; AT r, c; CHR$(143); CHR$(143)
     NEXT r
-    FOR r = gap + 6 TO 22                   ' gap is 6 rows tall
+    FOR r = gap + 8 TO 22                   ' gap is 8 rows tall
       PRINT PAPER 0; INK 4; AT r, c; CHR$(143); CHR$(143)
     NEXT r
   END IF
@@ -70,7 +70,7 @@ END SUB
 
 SUB SpawnPipe(slot AS INTEGER)
   pipeCol(slot)    = 30
-  pipeGap(slot)    = INT(RND * 14) + 2   ' random row 2–15
+  pipeGap(slot)    = INT(RND * 12) + 2   ' random row 2–13 (gap+8 must stay ≤22)
   pipeActive(slot) = 1
 END SUB
 
