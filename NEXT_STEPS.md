@@ -88,7 +88,7 @@ Status: **Phase 8 complete. Dynamic speed scaling + border-tier indicator live. 
   live selection indicator; 1/2/3 keys cycle; SPACE confirms.
 - [x] `src/game/main.bas` — CLS before each round; maps `selectedDifficulty` → `pipeGapSize`.
 - [x] `tests/test_pipes.bas` — 3 new difficulty bound groups (Easy/Normal/Hard), 11 total assertions.
-- [x] `tests/test_title_render.bas` — 2 new attribute assertions (rows 15+17).
+- [x] `tests/test_title_render.bas` — 2 new attribute assertions (rows 15+17); row 21 mute indicator added (9 total).
 
 ---
 
@@ -183,9 +183,10 @@ Status: **Phase 8 complete. Dynamic speed scaling + border-tier indicator live. 
 - [x] `assets/sounds/sounds.bas` — `DIM soundMuted AS INTEGER : soundMuted = 1` (global, muted by default).
   Each SUB checks the flag: `SoundFlap`/`SoundScore` skip `BEEP` when `soundMuted = 1`.
   `SoundDie` falls back to `PAUSE 25` (~0.5 s) when muted so the death-flash timing is preserved.
-- [x] `src/game/launcher.bas` — option **3 SOUND: MUTED / ON** added to the launcher menu.
-  Colour-coded: INK 3 (magenta) when muted, INK 4 (green) when on.
-  Toggle: `soundMuted = 1 - soundMuted`; row is redrawn in place (no full CLS).
+- [x] `src/screens/title.bas` — **M key** toggles mute on the title/start screen (row 21, col 12).
+  Colour-coded: INK 3 (magenta) `M=MUTE  ` when muted, INK 4 (green) `M=UNMUTE` when on.
+  Toggle: `soundMuted = 1 - soundMuted`; row redrawn in-place, no full CLS.
+  `src/game/launcher.bas` reverted to 2-option menu — mute control belongs on the title screen.
 - [x] `tests/test_sound.bas` — 4 new assertions (total: 7):
   - Test 4: `soundMuted` defaults to 1.
   - Test 5: toggle 1 → 0 (unmute).
@@ -241,7 +242,7 @@ Status: **Phase 8 complete. Dynamic speed scaling + border-tier indicator live. 
 |---|---|---|---|
 | Unified suite | `tests/test_suite.bas` | ✅ done | Menu-driven runner; all tests from one TAP |
 | UDG memory integrity | `tests/test_bird_udg.bas` | ✅ done | Fully automated PEEK assertions |
-| Title screen attributes | `tests/test_title_render.bas` | ✅ done | Semi-automated; attributes snapshot before `CLS` |
+| Title screen attributes | `tests/test_title_render.bas` | ✅ done | Semi-automated; 9 attribute assertions incl. mute indicator (row 21) |
 | Physics unit test | `tests/test_physics.bas` | ✅ done | Fully automated; gravity, flap, clamp assertions |
 | Pipe spawning | `tests/test_pipes.bas` | ✅ done | Fully automated; init state, gap bounds, spawn assertions |
 | Collision accuracy | `tests/test_collision.bas` | ✅ done | Automated: safe/floor/POKE-green/POKE-clear — 4 assertions |

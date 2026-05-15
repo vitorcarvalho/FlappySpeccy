@@ -54,7 +54,7 @@
 | File | Status | Responsibility |
 |---|---|---|
 | `src/game/main.bas` | ✅ done | Bootstrap: load UDGs → CLS → title → map difficulty → `RunGame` loop |
-| `src/screens/title.bas` | ✅ done | `ShowTitle(score)` — splash screen, difficulty 1/2/3 selection, sets `selectedDifficulty` |
+| `src/screens/title.bas` | ✅ done | `ShowTitle(score)` — splash screen, difficulty 1/2/3 selection, M key mute toggle; sets `selectedDifficulty` |
 | `assets/sprites/bird_udg.bas` | ✅ done | `LoadBirdUDG()` — POKEs 8 bytes into UDG slot "A" ("SKY" pixel-art glyph) |
 | `src/game/physics.bas` | ✅ done | `InitPhysics()` / `UpdatePhysics(flap%)` — gravity accumulator, velocity clamp, floor/ceiling clamp |
 | `src/game/difficulty.bas` | ✅ done | `GetSpeedTier(s)` / `GetBorderColor(s)` — pure difficulty-curve helpers (no I/O) |
@@ -62,7 +62,7 @@
 | `src/game/pipes.bas` | ✅ done | `InitPipes()` / `UpdatePipes()` — 3-slot array, 2-col-wide pipes, difficulty-driven gap (`pipeGapSize` 10/8/6); `pipeScored(3)` tracks awarded points |
 | `src/game/collision.bas` | ✅ done | `CheckCollision()` — floor sentinel (row ≥ 22) + ATTR-based pipe hit (INK 4 = green) |
 | `src/screens/gameover.bas` | ✅ done | `GetMedalRank(score)` (pure, testable) + `ShowGameOver(score)` — medal display, SPACE to retry |
-| `assets/sounds/sounds.bas` | ✅ done | `soundMuted` global (default 1); `SoundFlap()` / `SoundScore()` / `SoundDie()` — gated on `soundMuted` |
+| `assets/sounds/sounds.bas` | ✅ done | `soundMuted` global (default 1); `SoundFlap()` / `SoundScore()` / `SoundDie()` — all gated on `soundMuted` |
 | `assets/sprites/pipe_tiles.bas` | 🔜 planned | Block graphic character selection |
 
 ---
@@ -157,7 +157,7 @@ spectrum/
 │   │   ├── difficulty.bas      ✅ GetSpeedTier() / GetBorderColor() — pure difficulty helpers
 │   │   └── collision.bas       ✅ CheckCollision() — floor + ATTR pipe hit detection
 │   └── screens/
-│       ├── title.bas           ✅ Title / start screen with UDG bird, difficulty select
+│       ├── title.bas           ✅ Title / start screen — UDG bird, difficulty select, M=mute toggle
 │       └── gameover.bas        ✅ GetMedalRank() + ShowGameOver() — medal, SPACE to retry
 │
 ├── assets/

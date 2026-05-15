@@ -28,6 +28,7 @@
 '   "1=EASY 2=NORMAL 3=HARD" row 15 col  5  INK 5            →    5     =   5
 '   "> NORMAL <" (default)   row 17 col 11  INK 6 BRIGHT 1  → 64+6     =  70
 '   "HIGH SCORE: 0"          row 19 col  9  INK 4            →    4     =   4
+'   "M=MUTE  " (default)     row 21 col 12  INK 3            →    3     =   3
 '
 ' Note: FLASH 0 / BRIGHT 0 at the end of ShowTitle reset the system variable
 ' only — they do NOT modify attribute bytes already written to 0x5800+.
@@ -60,6 +61,7 @@ SUB RunTestTitleRender()
   DIM atDiffKey  AS INTEGER
   DIM atDiffSel  AS INTEGER
   DIM atHiScore  AS INTEGER
+  DIM atMute     AS INTEGER
 
   atTitle    = PEEK(22528 +  2*32 +  9)
   atSubtitle = PEEK(22528 +  4*32 +  7)
@@ -69,6 +71,7 @@ SUB RunTestTitleRender()
   atDiffKey  = PEEK(22528 + 15*32 +  5)   ' "1=EASY 2=NORMAL 3=HARD" key guide
   atDiffSel  = PEEK(22528 + 17*32 + 11)   ' "> NORMAL <" default selection
   atHiScore  = PEEK(22528 + 19*32 +  9)
+  atMute     = PEEK(22528 + 21*32 + 12)   ' "M=MUTE  " default (soundMuted=1)
 
   BORDER 0 : PAPER 0 : INK 7 : BRIGHT 0 : FLASH 0 : CLS
   PRINT BRIGHT 1; INK 6; "TEST: ShowTitle() attrs"
@@ -86,6 +89,7 @@ SUB RunTestTitleRender()
   AssertEq("diff key   r15 c5  attr=5  ",   5, atDiffKey)
   AssertEq("diff sel   r17 c11 attr=70 ",  70, atDiffSel)
   AssertEq("hi-score   r19 c9  attr=4  ",   4, atHiScore)
+  AssertEq("mute ind   r21 c12 attr=3  ",   3, atMute)
 
   ' ── Summary ─────────────────────────────────────────────────────────────────
   PRINT

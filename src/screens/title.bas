@@ -18,6 +18,7 @@
 '   Row 15  col  5  "1=EASY 2=NORMAL 3=HARD"  INK 5 BRIGHT 0  (key guide)
 '   Row 17  col 11  "> NORMAL <"           INK 6 BRIGHT 1  (current selection)
 '   Row 19  col  9  "HIGH SCORE: n"        INK 4 BRIGHT 0  (green)
+'   Row 21  col 12  "M=MUTE  " / "M=UNMUTE"  INK 3 / INK 4 BRIGHT 0  (mute toggle)
 '
 ' Centering rationale (screen is 32 columns wide):
 '   "FLAPPY SPECCY"         13 chars  → (32-13)/2  = 9   → col 9
@@ -27,6 +28,7 @@
 '   "1=EASY 2=NORMAL 3=HARD" 22 chars → (32-22)/2  = 5   → col 5
 '   "> NORMAL <"            10 chars  → (32-10)/2  = 11  → col 11
 '   "HIGH SCORE: 0"         13 chars  → (32-13)/2  = 9   → col 9
+'   "M=MUTE  " / "M=UNMUTE"  8 chars  → (32-8)/2   = 12  → col 12
 '
 ' Difficulty keys:
 '   1 = Easy   (pipeGapSize 10)  gap row 2-12
@@ -44,6 +46,8 @@
 
 #ifndef TITLE_BAS
 #define TITLE_BAS
+
+#include "../../assets/sounds/sounds.bas"
 
 ' selectedDifficulty is set by ShowTitle and read by RunFlappySpeccy in main.bas.
 '   1 = Easy (gap 10 rows)  2 = Normal (gap 8 rows)  3 = Hard (gap 6 rows)
@@ -93,7 +97,17 @@ SUB ShowTitle(score AS INTEGER)
   ' ── High score ────────────────────────────────────────────────────────────
   PRINT INK 4; BRIGHT 0; PAPER 0; AT 19, 9; "HIGH SCORE: "; score
 
-  ' ── Wait for SPACE; allow 1/2/3 to change difficulty ──────────────────────
+  ' ── Mute indicator ────────────────────────────────────────────────────────
+  ' "M=MUTE  " / "M=UNMUTE" — both 8 chars → (32-8)/2 = 12 → col 12.
+  ' INK 3 (magenta) = muted (default);  INK 4 (green) = sound on.
+  ' Drawn before the loop so the initial state is always visible.
+  IF soundMuted = 1 THEN
+    PRINT INK 3; BRIGHT 0; PAPER 0; AT 21, 12; "M=MUTE  "
+  ELSE
+    PRINT INK 4; BRIGHT 0; PAPER 0; AT 21, 12; "M=UNMUTE"
+  END IF
+
+  ' ── Wait for SPACE; allow 1/2/3 to change difficulty, M to toggle mute ────
   ' PAUSE 1 yields to the 50 Hz interrupt to avoid busy-spinning the Z80.
   ' k is sampled once per frame; held keys are handled correctly.
   DO
@@ -108,6 +122,16 @@ SUB ShowTitle(score AS INTEGER)
       IF diff = 1 THEN PRINT INK 6; BRIGHT 1; PAPER 0; AT 17, 11; "> EASY <  "
       IF diff = 2 THEN PRINT INK 6; BRIGHT 1; PAPER 0; AT 17, 11; "> NORMAL <"
       IF diff = 3 THEN PRINT INK 6; BRIGHT 1; PAPER 0; AT 17, 11; "> HARD <  "
+    END IF
+
+    IF k = "m" OR k = "M" THEN
+      soundMuted = 1 - soundMuted
+      ' Redraw mute indicator in-place — 8-char field, no erase needed.
+      IF soundMuted = 1 THEN
+        PRINT INK 3; BRIGHT 0; PAPER 0; AT 21, 12; "M=MUTE  "
+      ELSE
+        PRINT INK 4; BRIGHT 0; PAPER 0; AT 21, 12; "M=UNMUTE"
+      END IF
     END IF
 
   LOOP UNTIL k = " "
