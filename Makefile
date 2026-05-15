@@ -15,14 +15,15 @@
 #   make run-test-collision       — run collision detection unit test standalone
 #   make run-test-gameover        — run medal rank unit test standalone
 #   make run-test-sound           — run sound smoke test standalone
+#   make run-test-difficulty-curve — run difficulty curve (speed/border) unit tests standalone
 #   make dist                     — copy TAP to dist/
 #   make clean                    — remove build artefacts
 
 .PHONY: all run tests dist clean build-launcher run-launcher \
         run-test-suite run-test-bird-udg run-test-title-render run-test-physics run-test-pipes \
-        run-test-collision run-test-gameover run-test-sound
+        run-test-collision run-test-gameover run-test-sound run-test-difficulty-curve
 
 all run tests dist clean build-launcher run-launcher \
 run-test-suite run-test-bird-udg run-test-title-render run-test-physics run-test-pipes \
-run-test-collision run-test-gameover run-test-sound:
+run-test-collision run-test-gameover run-test-sound run-test-difficulty-curve:
 	@$(MAKE) -f tools/Makefile $@

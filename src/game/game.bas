@@ -1,6 +1,7 @@
 ' =============================================================================
 ' src/game/game.bas
-' Core game loop — Phase 7: physics + scrolling pipes + collision + scoring + sound.
+' Core game loop — Phase 8: physics + pipes + collision + scoring + sound +
+'                           dynamic speed + border tier indicator.
 '
 ' Exports:
 '   RunGame()  — runs one game session; returns when Q is pressed or the
@@ -8,11 +9,12 @@
 '   score      — INTEGER global; final score readable by main.bas after return.
 '
 ' Depends on (via the #include chain in main.bas):
-'   physics.bas   — InitPhysics(), UpdatePhysics(), birdRow, birdVel, birdCol
-'   pipes.bas     — InitPipes(), UpdatePipes(), pipeCol/Active/Scored arrays
-'   collision.bas — CheckCollision() — returns 1 on pipe or floor hit
-'   sounds.bas    — SoundFlap(), SoundScore(), SoundDie()
-'   bird_udg.bas  — CHR$(144) must be loaded by LoadBirdUDG() before RunGame()
+'   difficulty.bas — GetSpeedTier(s), GetBorderColor(s) — pure speed/border helpers
+'   physics.bas    — InitPhysics(), UpdatePhysics(), birdRow, birdVel, birdCol
+'   pipes.bas      — InitPipes(), UpdatePipes(), pipeCol/Active/Scored arrays
+'   collision.bas  — CheckCollision() — returns 1 on pipe or floor hit
+'   sounds.bas     — SoundFlap(), SoundScore(), SoundDie()
+'   bird_udg.bas   — CHR$(144) must be loaded by LoadBirdUDG() before RunGame()
 '
 ' Rendering strategy (from ARCHITECTURE.md):
 '   CLS not called per frame.  Pipes are erased then redrawn via UpdatePipes().
@@ -27,8 +29,17 @@
 '   Bird is always at birdCol (=4).  A pipe at pipeCol <= 2 has fully cleared
 '   the bird.  pipeScored(i) prevents awarding the point more than once.
 '   HUD row 0 layout:  "SPC=FLAP" col 0 | score col 14 | "Q=QUIT" col 25
+'
+' Dynamic speed (Phase 8):
+'   pauseDelay starts at 4 (slowest) and drops by 1 every 5 points.
+'   Minimum pauseDelay = 1 (fastest).  Computed by GetSpeedTier(score).
+'
+' Border tier indicator (Phase 8):
+'   BORDER colour advances every 10 points: black→blue→magenta→yellow→red.
+'   Reset to BORDER 0 after game over so the title screen is clean.
 ' =============================================================================
 
+#include "difficulty.bas"
 #include "physics.bas"
 #include "pipes.bas"
 #include "collision.bas"
@@ -45,6 +56,8 @@ SUB RunGame()
   DIM physTick    AS INTEGER   ' toggles 0/1; physics runs only when 1
   DIM flapPending AS INTEGER   ' latches SPACE across skipped physics frames
   DIM i           AS INTEGER   ' scoring loop index
+  DIM pauseDelay  AS INTEGER   ' PAUSE ticks per frame (4=slow … 1=fast)
+  DIM borderColor AS INTEGER   ' current border colour index
 
   ' ── Initialise ──────────────────────────────────────────────────────────────
   CLS
@@ -53,6 +66,9 @@ SUB RunGame()
   physTick    = 0
   flapPending = 0
   score       = 0
+  pauseDelay  = 4              ' start at slowest speed (score 0)
+  borderColor = 0
+  BORDER 0
   InitPhysics()
   InitPipes()
   prevRow = birdRow
@@ -68,7 +84,7 @@ SUB RunGame()
 
   ' ── Game loop (~50 Hz) ──────────────────────────────────────────────────────
   DO
-    PAUSE 1          ' yield to 50 Hz interrupt — keeps timing hardware-accurate
+    PAUSE pauseDelay   ' dynamic: 4 frames at score 0, down to 1 at score 15+
     key = INKEY$
 
     ' Quit to title screen
@@ -104,6 +120,10 @@ SUB RunGame()
         score = score + 1
         PRINT INK 6; BRIGHT 1; PAPER 0; AT 0, 14; score; "  "
         SoundScore()
+        ' Phase 8: update speed tier and border colour on every point scored
+        pauseDelay  = GetSpeedTier(score)
+        borderColor = GetBorderColor(score)
+        BORDER borderColor
       END IF
     NEXT i
 
@@ -124,5 +144,8 @@ SUB RunGame()
     FLASH 0
     BRIGHT 0
   END IF
+
+  ' Phase 8: reset border to black so the title/game-over screen is clean
+  BORDER 0
 
 END SUB

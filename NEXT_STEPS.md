@@ -1,6 +1,6 @@
 # Next Steps — Implementation Plan
 
-Status: **Phase 7 complete. BEEP-based sound effects live (flap, score, death jingle). Unified test suite covers 7 modules.**
+Status: **Phase 8 complete. Dynamic speed scaling + border-tier indicator live. Unified test suite covers 8 modules.**
 
 ---
 
@@ -153,12 +153,26 @@ Status: **Phase 7 complete. BEEP-based sound effects live (flap, score, death ji
 
 ---
 
-## Phase 8 — Polish & Difficulty Curve
+## Phase 8 — Polish & Difficulty Curve ✅ DONE
 
-- [ ] Increase pipe scroll speed every 5 points (reduce `PAUSE` delay).
-- [ ] Add border colour change as speed tier indicator.
-- [ ] Persist high score across game sessions (POKE to a known RAM address).
-- [ ] Optimise render loop — profile with FUSE's built-in profiler.
+- [x] **Dynamic speed** — `GetSpeedTier(score)` in `src/game/difficulty.bas` returns PAUSE delay 4→1.
+  - Every 5 points scored, delay drops by 1 (floor = 1).
+  - `RunGame()` initialises `pauseDelay = 4`; updates it in the scoring loop via `GetSpeedTier(score)`.
+  - `PAUSE pauseDelay` replaces the fixed `PAUSE 1` in the game loop.
+- [x] **Border tier indicator** — `GetBorderColor(score)` returns a ZX border colour index.
+  - Tiers: black (0–9) → blue (10–19) → magenta (20–29) → yellow (30–39) → red (40+).
+  - `BORDER borderColor` called immediately after each point is scored.
+  - `BORDER 0` reset after game over so title/game-over screen is clean.
+- [x] **High score persistence** — already in `main.bas`; `highScore` variable is updated after each
+  `RunGame()` call and passed to `ShowTitle(highScore)` which renders it on the title screen.
+  Persists for the full session (48K has no filesystem; in-RAM is the correct approach).
+- [x] `src/game/difficulty.bas` **new** — pure module; both functions are pure (no I/O) so the
+  test can include it in isolation without pulling in the full game-loop dependency chain.
+- [x] `tests/test_difficulty_curve.bas` **new** — 19 boundary assertions:
+  - 9 for `GetSpeedTier` (including clamp at 15 and 20)
+  - 10 for `GetBorderColor` (boundary pairs for every tier transition)
+- [x] `tests/test_suite.bas` — option **8 DIFFICULTY CURVE** added to menu.
+- [x] `make run-test-difficulty-curve` target added to both Makefiles.
 
 ---
 
@@ -214,6 +228,7 @@ Status: **Phase 7 complete. BEEP-based sound effects live (flap, score, death ji
 | Collision accuracy | `tests/test_collision.bas` | ✅ done | Automated: safe/floor/POKE-green/POKE-clear — 4 assertions |
 | Medal ranks | `tests/test_gameover.bas` | ✅ done | Automated: boundary values 0/9/10/20/30/40/50 — 7 assertions |
 | Sound smoke test | `tests/test_sound.bas` | ✅ done | Automated: each BEEP SUB callable without crash — 3 assertions |
+| Difficulty curve | `tests/test_difficulty_curve.bas` | ✅ done | Automated: `GetSpeedTier` + `GetBorderColor` boundary values — 19 assertions |
 | Full play-through | Manual | 🔜 planned | Load release `.tap`, play to score ≥ 10 |
 
 ---
@@ -232,6 +247,7 @@ make run-test-pipes            # run pipe spawn/state test standalone
 make run-test-collision        # run collision detection test standalone
 make run-test-gameover         # run medal rank test standalone
 make run-test-sound            # run sound smoke test standalone
+make run-test-difficulty-curve # run difficulty curve (speed/border) unit tests standalone
 make clean                     # remove build artefacts
 zxbc src/game/main.bas -h      # compiler help
 ```

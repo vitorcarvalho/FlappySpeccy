@@ -13,6 +13,7 @@
 '   5  Collision      — automated floor + attr-based pipe hit assertions
 '   6  Game Over      — automated medal rank boundary assertions
 '   7  Sound          — automated smoke test: each BEEP SUB callable without crash
+'   8  Difficulty     — automated GetSpeedTier + GetBorderColor boundary assertions
 '
 ' #define SUITE_MODE before including test files suppresses their standalone
 ' RunTestXxx() + PAUSE 0 calls, leaving only the SUB definitions.
@@ -31,6 +32,7 @@
 #include "test_collision.bas"
 #include "test_gameover.bas"
 #include "test_sound.bas"
+#include "test_difficulty_curve.bas"
 
 ' ── Menu ──────────────────────────────────────────────────────────────────────
 
@@ -45,8 +47,9 @@ SUB ShowMenu()
   PRINT           INK 7; PAPER 0; AT 14,6; "5  COLLISION     (auto)"
   PRINT           INK 7; PAPER 0; AT 16,6; "6  GAME OVER     (auto)"
   PRINT           INK 7; PAPER 0; AT 18,6; "7  SOUND         (auto)"
-  PRINT           INK 5; PAPER 0; AT 20,6; "0  BACK TO LAUNCHER"
-  PRINT BRIGHT 1; INK 5; PAPER 0; AT 22,4; "PRESS 1-7 TO SELECT TEST"
+  PRINT           INK 7; PAPER 0; AT 20,6; "8  DIFFICULTY    (auto)"
+  PRINT           INK 5; PAPER 0; AT 22,6; "0  BACK TO LAUNCHER"
+  PRINT BRIGHT 1; INK 5; PAPER 0; AT 23,4; "PRESS 1-8 TO SELECT TEST"
 END SUB
 
 ' ── "back to menu" prompt shown after every test ──────────────────────────────
@@ -69,7 +72,7 @@ SUB RunTestSuite()
     DO
       PAUSE 1
       menuKey = INKEY$
-    LOOP UNTIL menuKey = "0" OR menuKey = "1" OR menuKey = "2" OR menuKey = "3" OR menuKey = "4" OR menuKey = "5" OR menuKey = "6" OR menuKey = "7"
+    LOOP UNTIL menuKey = "0" OR menuKey = "1" OR menuKey = "2" OR menuKey = "3" OR menuKey = "4" OR menuKey = "5" OR menuKey = "6" OR menuKey = "7" OR menuKey = "8"
 
     IF menuKey = "1" THEN
       RunTestBirdUDG()
@@ -103,6 +106,11 @@ SUB RunTestSuite()
 
     IF menuKey = "7" THEN
       RunTestSound()
+      WaitForMenu()
+    END IF
+
+    IF menuKey = "8" THEN
+      RunTestDifficultyCurve()
       WaitForMenu()
     END IF
   LOOP UNTIL menuKey = "0"
