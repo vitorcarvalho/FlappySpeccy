@@ -15,21 +15,30 @@
 ' Rendering strategy (from ARCHITECTURE.md):
 '   CLS not called per frame.  Pipes are erased then redrawn via UpdatePipes().
 '   The bird is drawn last so it always appears on top of pipe columns.
+'
+' Physics tick divider:
+'   The game loop runs at 50 Hz but physics only advances every 2 frames (25 Hz).
+'   Pipes still scroll every frame for smooth visual movement.
+'   Flap input is latched so no SPACE press is lost on a skipped physics frame.
 ' =============================================================================
 
 #include "physics.bas"
 #include "pipes.bas"
 
 SUB RunGame()
-  DIM prevRow  AS INTEGER
-  DIM gameOver AS INTEGER
-  DIM quitGame AS INTEGER
-  DIM key      AS STRING
+  DIM prevRow     AS INTEGER
+  DIM gameOver    AS INTEGER
+  DIM quitGame    AS INTEGER
+  DIM key         AS STRING
+  DIM physTick    AS INTEGER   ' toggles 0/1; physics runs only when 1
+  DIM flapPending AS INTEGER   ' latches SPACE across skipped physics frames
 
   ' ── Initialise ──────────────────────────────────────────────────────────────
   CLS
-  gameOver = 0
-  quitGame = 0
+  gameOver    = 0
+  quitGame    = 0
+  physTick    = 0
+  flapPending = 0
   InitPhysics()
   InitPipes()
   prevRow = birdRow
@@ -52,18 +61,21 @@ SUB RunGame()
       quitGame = 1
     END IF
 
+    ' Latch flap — remember SPACE even on frames where physics is skipped
+    IF key = " " THEN flapPending = 1
+
     ' Erase bird at previous position before moving
     PRINT INK 0; PAPER 0; AT prevRow, birdCol; " "
 
-    ' Advance physics — flap on SPACE, gravity only otherwise
-    prevRow = birdRow
-    IF key = " " THEN
-      UpdatePhysics(1)
-    ELSE
-      UpdatePhysics(0)
+    ' Physics runs every 2 frames (25 Hz) — halves fall/flap speed
+    physTick = 1 - physTick
+    IF physTick = 1 THEN
+      prevRow = birdRow
+      UpdatePhysics(flapPending)
+      flapPending = 0
     END IF
 
-    ' Scroll pipes (erase at old col, move, draw at new col)
+    ' Scroll pipes every frame — smooth visual movement at full 50 Hz
     UpdatePipes()
 
     ' Draw bird last — always on top of any pipe column
