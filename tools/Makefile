@@ -24,6 +24,11 @@ DIST         := dist/flappy_speccy.tap
 LAUNCHER_SRC := src/game/launcher.bas
 LAUNCHER_TAP := build/launcher.tap
 
+# All ZX BASIC source files — used as a blanket dependency so any .bas change
+# triggers a rebuild of every TAP that transitively includes it.
+# Without this, Make only sees the direct source file and misses include changes.
+ALL_BAS := $(shell find src tests assets -name '*.bas' 2>/dev/null)
+
 # ── Compiler flags ─────────────────────────────────────────────────────────────
 # -f tap       : produce a .TAP tape image
 #                (--tap is deprecated since zxbasic 1.16; -f tap is the current form)
@@ -45,11 +50,12 @@ TEST_TAPS := $(patsubst tests/%.bas,build/%.tap,$(TEST_SRCS))
 .PHONY: all run dist tests clean \
         build-launcher run-launcher \
         run-test-suite \
-        run-test-bird-udg run-test-title-render run-test-physics run-test-pipes
+        run-test-bird-udg run-test-title-render run-test-physics run-test-pipes \
+        run-test-collision
 
 all: $(TAP)
 
-$(TAP): $(SRC)
+$(TAP): $(ALL_BAS)
 	@mkdir -p build
 	$(ZXBC) $(SRC) $(ZXFLAGS) -o $(TAP)
 
@@ -60,7 +66,7 @@ run: $(TAP)
 # ── Launcher ──────────────────────────────────────────────────────────────────
 build-launcher: $(LAUNCHER_TAP)
 
-$(LAUNCHER_TAP): $(LAUNCHER_SRC)
+$(LAUNCHER_TAP): $(ALL_BAS)
 	@mkdir -p build
 	$(ZXBC) $(LAUNCHER_SRC) $(ZXFLAGS) -o $(LAUNCHER_TAP)
 
@@ -71,7 +77,7 @@ run-launcher: $(LAUNCHER_TAP)
 # ── Test compilation ──────────────────────────────────────────────────────────
 tests: $(TEST_TAPS)
 
-build/test_%.tap: tests/test_%.bas
+build/test_%.tap: tests/test_%.bas $(ALL_BAS)
 	@mkdir -p build
 	$(ZXBC) $< $(ZXFLAGS_TEST) -o $@
 
@@ -89,6 +95,10 @@ run-test-physics: build/test_physics.tap
 	open $(HOME)/Applications/ZEsarUX.app --args $(EMU_ARGS) $(abspath $<)
 
 run-test-pipes: build/test_pipes.tap
+	-pkill -x zesarux 2>/dev/null; sleep 0.5
+	open $(HOME)/Applications/ZEsarUX.app --args $(EMU_ARGS) $(abspath $<)
+
+run-test-collision: build/test_collision.tap
 	-pkill -x zesarux 2>/dev/null; sleep 0.5
 	open $(HOME)/Applications/ZEsarUX.app --args $(EMU_ARGS) $(abspath $<)
 

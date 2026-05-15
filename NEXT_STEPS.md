@@ -92,21 +92,23 @@ Status: **Phase 4b complete. Difficulty selection (1=Easy/2=Normal/3=Hard) live 
 
 ---
 
-## Phase 5 — Collision Detection
+## Phase 5 — Collision Detection ✅ DONE
 
 **Goal:** game ends when bird hits a pipe or floor/ceiling.
 
-- [ ] Create `src/game/collision.bas`:
-  - After drawing, read attribute at bird's cell:
+- [x] Created `src/game/collision.bas` — `CheckCollision() AS INTEGER`:
+  - Floor sentinel: `IF birdRow >= 22 THEN hit = 1`
+  - ATTR-based pipe hit (checked BEFORE drawing the bird to avoid false positives):
     ```basic
-    DIM attr AS UBYTE
-    attr = PEEK (22528 + birdRow * 32 + birdCol)
-    IF (attr AND 7) = 4 THEN gameOver = 1  ' INK=GREEN = pipe
+    attr     = PEEK(22528 + birdRow * 32 + birdCol)
+    inkColor = attr AND 7
+    IF inkColor = 4 THEN hit = 1   ' INK 4 = green = pipe
     ```
-  - Floor: `IF birdRow >= 23 THEN gameOver = 1`
-  - Ceiling: `IF birdRow <= 0 THEN gameOver = 1`
-
-- [ ] On death: `FLASH 1`, `BEEP 0.5, 200`, transition to game-over screen.
+- [x] Integrated `CheckCollision()` into `game.bas` — replaces the old floor-only guard.
+- [x] Created `tests/test_collision.bas` — 4 automated assertions (safe/floor/pipe/clear).
+- [x] Added option 5 to the test suite menu (`test_suite.bas`).
+- [x] Added `run-test-collision` Makefile target.
+- [x] Fixed transitive Makefile dependency: `ALL_BAS` wildcard covers all `.bas` files.
 
 ---
 
@@ -201,7 +203,7 @@ Status: **Phase 4b complete. Difficulty selection (1=Easy/2=Normal/3=Hard) live 
 | Title screen attributes | `tests/test_title_render.bas` | ✅ done | Semi-automated; attributes snapshot before `CLS` |
 | Physics unit test | `tests/test_physics.bas` | ✅ done | Fully automated; gravity, flap, clamp assertions |
 | Pipe spawning | `tests/test_pipes.bas` | ✅ done | Fully automated; init state, gap bounds, spawn assertions |
-| Collision accuracy | `tests/test_collision.bas` | 🔜 planned | Place bird adjacent to known pipe, assert death triggers |
+| Collision accuracy | `tests/test_collision.bas` | ✅ done | Automated: safe/floor/POKE-green/POKE-clear — 4 assertions |
 | Full play-through | Manual | 🔜 planned | Load release `.tap`, play to score ≥ 10 |
 
 ---

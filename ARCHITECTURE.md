@@ -57,9 +57,9 @@
 | `src/screens/title.bas` | ✅ done | `ShowTitle(score)` — splash screen, difficulty 1/2/3 selection, sets `selectedDifficulty` |
 | `assets/sprites/bird_udg.bas` | ✅ done | `LoadBirdUDG()` — POKEs 8 bytes into UDG slot "A" ("SKY" pixel-art glyph) |
 | `src/game/physics.bas` | ✅ done | `InitPhysics()` / `UpdatePhysics(flap%)` — gravity accumulator, velocity clamp, floor/ceiling clamp |
-| `src/game/game.bas` | ✅ done | `RunGame()` — 50 Hz render loop, 25 Hz physics tick, input latch, death flash |
+| `src/game/game.bas` | ✅ done | `RunGame()` — 50 Hz render loop, 25 Hz physics tick, collision check, death flash |
 | `src/game/pipes.bas` | ✅ done | `InitPipes()` / `UpdatePipes()` — 3-slot array, 2-col-wide pipes, difficulty-driven gap (`pipeGapSize` 10/8/6) |
-| `src/game/collision.bas` | 🔜 planned | ATTR-based hit detection (read display attributes) |
+| `src/game/collision.bas` | ✅ done | `CheckCollision()` — floor sentinel (row ≥ 22) + ATTR-based pipe hit (INK 4 = green) |
 | `src/screens/gameover.bas` | 🔜 planned | Game-over splash, medal display |
 | `assets/sprites/pipe_tiles.bas` | 🔜 planned | Block graphic character selection |
 | `assets/sounds/sounds.bas` | 🔜 planned | Named `BEEP` sequences for events |
@@ -150,10 +150,10 @@ spectrum/
 ├── src/
 │   ├── game/
 │   │   ├── main.bas            ✅ Entry point: init → title → game loop
-│   │   ├── game.bas            ✅ RunGame() — 50 Hz loop, 25 Hz physics, input latch
+│   │   ├── game.bas            ✅ RunGame() — 50 Hz loop, 25 Hz physics, collision check
 │   │   ├── physics.bas         ✅ InitPhysics() / UpdatePhysics() — gravity + flap
 │   │   ├── pipes.bas           ✅ InitPipes() / UpdatePipes() — scroll, spawn, gap
-│   │   └── collision.bas       🔜 Hit detection
+│   │   └── collision.bas       ✅ CheckCollision() — floor + ATTR pipe hit detection
 │   └── screens/
 │       ├── title.bas           ✅ Title / start screen with UDG bird
 │       └── gameover.bas        🔜 Game-over screen

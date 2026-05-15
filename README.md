@@ -106,6 +106,7 @@ make run-test-bird-udg        # automated — verifies UDG byte values via PEEK
 make run-test-title-render    # semi-automated — renders title, then checks screen attributes
 make run-test-physics         # automated — gravity, flap, velocity clamp, floor clamp
 make run-test-pipes           # automated — pipe init state, gap bounds, spawn state
+make run-test-collision       # automated — safe/floor/pipe-hit/pipe-clear assertions
 ```
 
 ### Test catalogue
@@ -117,6 +118,7 @@ make run-test-pipes           # automated — pipe init state, gap bounds, spawn
 | `run-test-title-render` | `tests/test_title_render.bas` | Semi-automated (press SPACE once) | Renders title screen, snapshots 8 attribute cells **before** `CLS` (incl. difficulty rows), then asserts ink/paper/bright/flash |
 | `run-test-physics` | `tests/test_physics.bas` | Fully automated | Init state, gravity fall, flap impulse, velocity clamp (≤3), floor clamp (≤22) |
 | `run-test-pipes` | `tests/test_pipes.bas` | Fully automated | Pipe init state, gap bounds per difficulty (Easy 2–12, Normal 2–14, Hard 2–16), spawn flag |
+| `run-test-collision` | `tests/test_collision.bas` | Fully automated | Safe position (no hit), floor sentinel (row 22), POKE green attr → hit, restore → no hit |
 
 ### Writing a new test
 
@@ -164,11 +166,12 @@ FlappySpeccy/
 │
 └── tests/
     ├── assert_helpers.bas       ← Shared AssertEq/GT/LTE/Attr + passed/failed counters
-    ├── test_suite.bas           ← Menu-driven unified runner (press 1/2/3/4)
+    ├── test_suite.bas           ← Menu-driven unified runner (press 1/2/3/4/5)
     ├── test_bird_udg.bas        ← UDG memory integrity test (fully automated)
     ├── test_title_render.bas    ← Screen attribute test (semi-automated)
     ├── test_physics.bas         ← Physics unit test (fully automated)
-    └── test_pipes.bas           ← Pipe init/spawn state test (fully automated)
+    ├── test_pipes.bas           ← Pipe init/spawn state test (fully automated)
+    └── test_collision.bas       ← Collision detection test (fully automated)
 ```
 
 Full architecture details → [ARCHITECTURE.md](ARCHITECTURE.md)

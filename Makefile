@@ -12,12 +12,15 @@
 #   make run-test-title-render    — run ShowTitle() attribute test standalone
 #   make run-test-physics         — run physics unit test standalone
 #   make run-test-pipes           — run pipe spawn/state unit test standalone
+#   make run-test-collision       — run collision detection unit test standalone
 #   make dist                     — copy TAP to dist/
 #   make clean                    — remove build artefacts
 
 .PHONY: all run tests dist clean build-launcher run-launcher \
-        run-test-suite run-test-bird-udg run-test-title-render run-test-physics run-test-pipes
+        run-test-suite run-test-bird-udg run-test-title-render run-test-physics run-test-pipes \
+        run-test-collision
 
 all run tests dist clean build-launcher run-launcher \
-run-test-suite run-test-bird-udg run-test-title-render run-test-physics run-test-pipes:
+run-test-suite run-test-bird-udg run-test-title-render run-test-physics run-test-pipes \
+run-test-collision:
 	@$(MAKE) -f tools/Makefile $@
