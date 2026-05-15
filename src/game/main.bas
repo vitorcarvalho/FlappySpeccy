@@ -29,6 +29,7 @@
 
 #include "../../assets/sprites/bird_udg.bas"
 #include "../screens/title.bas"
+#include "game.bas"
 
 ' =============================================================================
 ' Global state
@@ -74,37 +75,13 @@ LoadBirdUDG()
 ShowTitle(highScore)
 
 ' =============================================================================
-' Placeholder — game loop goes here (Phase 3 in NEXT_STEPS.md)
+' Main game loop — Phase 3
 ' =============================================================================
-' SPACE was pressed on the title screen.  In a future version this is where
-' the game loop starts: reset bird position, reset pipes, enter the 50 Hz
-' interrupt-synchronised loop.
+' ShowTitle blocks until SPACE, then RunGame runs until the bird hits the
+' floor or Q is pressed.  The outer DO loop returns to the title screen for
+' the next round.  highScore persistence is added in a later phase.
 
-CLS
-
-' ── Bird flock (top) ──────────────────────────────────────────────────────
-' Scattered birds above the text to suggest flight in progress.
-' CHR$(144) = UDG "A" (peacock silhouette loaded by LoadBirdUDG).
-PRINT INK 6; BRIGHT 1; PAPER 0; AT 2,  2; CHR$(144)
-PRINT INK 5; BRIGHT 0; PAPER 0; AT 1, 12; CHR$(144)
-PRINT INK 6; BRIGHT 1; PAPER 0; AT 3, 20; CHR$(144); CHR$(144)
-PRINT INK 5; BRIGHT 0; PAPER 0; AT 2, 28; CHR$(144)
-PRINT INK 6; BRIGHT 1; PAPER 0; AT 5,  7; CHR$(144)
-PRINT INK 5; BRIGHT 0; PAPER 0; AT 4, 25; CHR$(144)
-
-' ── Main message ──────────────────────────────────────────────────────────
-PRINT INK 6; BRIGHT 1; PAPER 0; AT 10, 8; "COMING SOON!"
-PRINT INK 7; BRIGHT 0; PAPER 0; AT 12, 5; "GAME LOOP NOT YET BUILT"
-PRINT INK 5; BRIGHT 0; PAPER 0; AT 14, 5; "SEE NEXT_STEPS.MD  PH.3"
-
-' ── Bird flock (bottom) ───────────────────────────────────────────────────
-' Mirror flock below the text — implies the birds are flying past.
-PRINT INK 5; BRIGHT 0; PAPER 0; AT 18,  4; CHR$(144)
-PRINT INK 6; BRIGHT 1; PAPER 0; AT 19, 14; CHR$(144); CHR$(144)
-PRINT INK 5; BRIGHT 0; PAPER 0; AT 17, 24; CHR$(144)
-PRINT INK 6; BRIGHT 1; PAPER 0; AT 20, 29; CHR$(144)
-PRINT INK 5; BRIGHT 0; PAPER 0; AT 21,  9; CHR$(144)
-
-' PAUSE 0 suspends the program until any key is pressed.
-' When the key is pressed, the program exits back to the BASIC prompt.
-PAUSE 0
+DO
+  ShowTitle(highScore)
+  RunGame()
+LOOP

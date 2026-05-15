@@ -7,10 +7,11 @@
 #   make tests                    — compile all test TAPs
 #   make run-test-bird-udg        — run LoadBirdUDG() unit test (includes UDG render)
 #   make run-test-title-render    — run ShowTitle() attribute test
+#   make run-test-physics         — run physics unit test (gravity, flap, clamps)
 #   make dist                     — copy TAP to dist/
 #   make clean                    — remove build artefacts
 
-.PHONY: all run tests dist clean run-test-bird-udg run-test-title-render
+.PHONY: all run tests dist clean run-test-bird-udg run-test-title-render run-test-physics
 
-all run tests dist clean run-test-bird-udg run-test-title-render:
+all run tests dist clean run-test-bird-udg run-test-title-render run-test-physics:
 	@$(MAKE) -f tools/Makefile $@
