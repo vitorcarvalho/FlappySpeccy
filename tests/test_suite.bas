@@ -36,6 +36,7 @@ SUB ShowMenu()
   PRINT           INK 7; PAPER 0; AT 8, 6; "2  TITLE RENDER  (semi)"
   PRINT           INK 7; PAPER 0; AT 10,6; "3  PHYSICS       (auto)"
   PRINT           INK 7; PAPER 0; AT 12,6; "4  PIPES         (auto)"
+  PRINT           INK 5; PAPER 0; AT 14,6; "0  BACK TO LAUNCHER"
   PRINT BRIGHT 1; INK 5; PAPER 0; AT 16,4; "PRESS 1-4 TO SELECT TEST"
 END SUB
 
@@ -59,7 +60,7 @@ SUB RunTestSuite()
     DO
       PAUSE 1
       menuKey = INKEY$
-    LOOP UNTIL menuKey = "1" OR menuKey = "2" OR menuKey = "3" OR menuKey = "4"
+    LOOP UNTIL menuKey = "0" OR menuKey = "1" OR menuKey = "2" OR menuKey = "3" OR menuKey = "4"
 
     IF menuKey = "1" THEN
       RunTestBirdUDG()
@@ -80,7 +81,7 @@ SUB RunTestSuite()
       RunTestPipes()
       WaitForMenu()
     END IF
-  LOOP
+  LOOP UNTIL menuKey = "0"
 END SUB
 
 ' ── Standalone entry point ────────────────────────────────────────────────────
