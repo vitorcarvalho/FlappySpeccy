@@ -9,7 +9,8 @@
 | Screen | 32 × 24 character cells | Bird and pipes are character-cell objects, not pixel objects |
 | Attribute grid | 32 × 24, 1 byte/cell | Colour changes per character cell only (not per pixel) |
 | UDGs | 21 slots (A–U, address $FF58) | Bird sprite = 1 UDG (8×8 px); pipe tile = block graphic |
-| Sound | `BEEP f, d` only | Monophonic; flap + death sounds only |
+| Sound | 48K: `BEEP f, d` only | Monophonic; flap + death sounds only |
+| Sound | 128K: AY-3-8912 PSG | 3-channel; music + effects via `OUT` writes (Phase 10) |
 | Frame rate | ~50 Hz (PAL) interrupt | Game loop tied to TV frame interrupt for timing |
 
 ---
@@ -56,8 +57,8 @@
 | `src/screens/title.bas` | ✅ done | `ShowTitle(score)` — splash screen, high score display, "PRESS SPACE" |
 | `assets/sprites/bird_udg.bas` | ✅ done | `LoadBirdUDG()` — POKEs 8 bytes into UDG slot "A" (peacock silhouette) |
 | `src/game/physics.bas` | ✅ done | `InitPhysics()` / `UpdatePhysics(flap%)` — gravity accumulator, velocity clamp, floor/ceiling clamp |
-| `src/game/game.bas` | ✅ done | `RunGame()` — 50 Hz loop, SPACE flap, Q quit, floor death flash |
-| `src/game/pipes.bas` | 🔜 planned | Pipe state array, scroll, gap randomisation |
+| `src/game/game.bas` | ✅ done | `RunGame()` — 50 Hz render loop, 25 Hz physics tick, input latch, death flash |
+| `src/game/pipes.bas` | ✅ done | `InitPipes()` / `UpdatePipes()` — 3-slot array, 2-col-wide pipes, 6-row gaps, scroll + spawn |
 | `src/game/collision.bas` | 🔜 planned | ATTR-based hit detection (read display attributes) |
 | `src/screens/gameover.bas` | 🔜 planned | Game-over splash, medal display |
 | `assets/sprites/pipe_tiles.bas` | 🔜 planned | Block graphic character selection |
@@ -144,10 +145,10 @@ spectrum/
 │
 ├── src/
 │   ├── game/
-│   │   ├── main.bas            ✅ Entry point: init → title → game loop placeholder
-│   │   ├── game.bas            🔜 Main game loop
-│   │   ├── physics.bas         🔜 Bird movement & gravity
-│   │   ├── pipes.bas           🔜 Pipe management
+│   │   ├── main.bas            ✅ Entry point: init → title → game loop
+│   │   ├── game.bas            ✅ RunGame() — 50 Hz loop, 25 Hz physics, input latch
+│   │   ├── physics.bas         ✅ InitPhysics() / UpdatePhysics() — gravity + flap
+│   │   ├── pipes.bas           ✅ InitPipes() / UpdatePipes() — scroll, spawn, gap
 │   │   └── collision.bas       🔜 Hit detection
 │   └── screens/
 │       ├── title.bas           ✅ Title / start screen with UDG bird

@@ -148,6 +148,38 @@ Status: **Phase 4 complete. Scrolling pipes implemented and tested. Unified test
 
 ---
 
+## Phase 10 — ZX Spectrum 128K Support
+
+**Goal:** leverage the AY-3-8912 sound chip and distribute a dedicated 128K build alongside the 48K release. The 48K TAP must remain fully functional and unmodified.
+
+- [ ] **AY sound module** — create `assets/sounds/sounds.bas`:
+  - Gate all implementations behind `#ifdef AY_SOUND`.
+  - 48K path: `BEEP`-based stubs (already planned in Phase 7).
+  - 128K path: AY register writes via `OUT` to ports `0xFFFD` (register select) and `0xBFFD` (register data).
+  - Expose the same SUB signatures in both paths — `SoundFlap()`, `SoundDie()`, `SoundScore()` — so call sites in `game.bas` are build-flag agnostic.
+
+- [ ] **Conditional compilation** — add `-D AY_SOUND` flag to the 128K build only:
+  ```sh
+  zxbc src/game/main.bas -f tap -B -a --optimize 2 --arch zx48k -D AY_SOUND -o build/flappy_speccy_128.tap
+  ```
+  No runtime `IF` checks — the flag resolves at compile time via `#ifdef`.
+
+- [ ] **Makefile targets** — extend `tools/Makefile`:
+  - `make build-128k` — compiles the 128K TAP with `-D AY_SOUND`.
+  - `make run-128k` — launches ZEsarUX with `--machine 128k` and the 128K TAP.
+  - `make dist` — copies both `flappy_speccy.tap` (48K) and `flappy_speccy_128.tap` (128K) to `dist/`.
+
+- [ ] **AY timing** — AY register writes must complete outside the tight game loop to avoid frame-rate impact. Use a dedicated sound-update SUB called once per physics tick (25 Hz), not per render frame.
+
+- [ ] **Verify compatibility**:
+  - 48K TAP: loads and runs on 48K hardware and in 128K → 48 BASIC mode.
+  - 128K TAP: loads and runs in 128K mode with AY audio active.
+  - Both verified in ZEsarUX (`--machine 48k` and `--machine 128k`).
+
+- [ ] **Update `dist/` manifest** — document which TAP targets which hardware in `docs/references.md`.
+
+---
+
 ## Testing Approach
 
 | Test | File | Status | How |

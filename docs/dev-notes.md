@@ -58,14 +58,16 @@ zxbc /tmp/hello.bas -f tap -B -a -o /tmp/hello.tap
 
 ## 48K vs 128K targeting
 
-This project targets the **ZX Spectrum 48K**:
+The **primary target is ZX Spectrum 48K**:
 - RAM available for code + data: ~40 KB (ROM occupies 16 KB at `$0000`–`$3FFF`).
 - No AY sound chip — sound is BEEP only.
 - No memory paging — simpler model, broader hardware compatibility.
 
+**128K support is planned for Phase 10** — the 48K TAP already runs in 128K compatibility mode with zero changes. The 128K build adds AY-3-8912 sound via `-D AY_SOUND` at compile time and a dedicated `make build-128k` / `make run-128k` Makefile target.
+
 When using ZEsarUX, the `--machine 48k` flag (set in `tools/Makefile` via `EMU_ARGS`) forces 48K mode. Do not rely on the emulator's saved config file — always pass `--noconfigfile --machine 48k` to guarantee a clean 48K environment.
 
-The compiler flag `--arch zx48k` (set in `tools/Makefile`) enforces the 48K target at compile time.
+The compiler flag `--arch zx48k` (set in `tools/Makefile`) enforces the 48K target at compile time. For the future 128K build, the same `--arch zx48k` flag is used — the 128K features are gated by the `-D AY_SOUND` preprocessor define, not a different arch.
 
 ---
 
@@ -182,6 +184,27 @@ The shared `assert_helpers.bas` defines `AssertEq`, `AssertGT`, `AssertLTE`, and
 ### 6. INTEGER everywhere — no exceptions in the game loop
 
 Untyped `DIM x` defaults to floating-point, which routes through the ZX ROM FP calculator — 30–100× slower than integer arithmetic on a 3.5 MHz Z80. Every game-loop variable — `birdRow`, `birdVel`, `pipeCol`, `score` — must be `DIM x AS INTEGER`.
+
+### 7. Physics tick divider — decoupling logic Hz from render Hz
+
+The game loop runs at 50 Hz (one `PAUSE 1` per iteration). Running physics every frame makes the bird fall and flap too fast for a comfortable game feel. The solution is a divider flag:
+
+```basic
+DIM physTick    AS INTEGER   ' toggles 0→1→0; physics runs only when 1
+DIM flapPending AS INTEGER   ' latches SPACE across skipped frames
+
+physTick = 1 - physTick
+IF physTick = 1 THEN
+  prevRow = birdRow
+  UpdatePhysics(flapPending)
+  flapPending = 0
+END IF
+```
+
+- **Pipes scroll every frame** (50 Hz) for smooth visual movement.
+- **Physics ticks every 2nd frame** (25 Hz) — halves effective fall and flap speed without changing the impulse constants in `UpdatePhysics`.
+- **Input latch:** `IF key = " " THEN flapPending = 1` fires every frame; the flag is consumed by `UpdatePhysics` and reset only on the physics frame. No SPACE press is lost on a skipped frame.
+- To change speed ratio: set divider to `3` for ≈17 Hz physics (slower/floatier), or remove divider entirely for 50 Hz (original fast feel).
 
 ---
 

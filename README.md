@@ -1,6 +1,6 @@
 # Flappy Speccy 🐦
 
-A Flappy Bird clone for the **ZX Spectrum 48K**, written in **ZX BASIC (Boriel BASIC)**.
+A Flappy Bird clone for the **ZX Spectrum 48K** (with a planned 128K build), written in **ZX BASIC (Boriel BASIC)**.
 
 The bird drops under gravity. Tap a key to flap. Navigate through gaps in the pipes. Die gloriously.
 
@@ -10,12 +10,12 @@ The bird drops under gravity. Tap a key to flap. Navigate through gaps in the pi
 
 | Property | Value |
 |---|---|
-| Target hardware | ZX Spectrum 48K |
+| Target hardware | ZX Spectrum 48K (primary); 128K planned (Phase 10) |
 | CPU | Zilog Z80 @ 3.5 MHz |
 | RAM | 48 KB usable (16 KB ROM + 48 KB) |
 | Screen | 256 × 192 pixels / 32 × 24 character cells |
 | Colours | 8 foreground + 8 background, 2 brightness levels |
-| Sound | Single-bit BEEP |
+| Sound | 48K: single-bit BEEP; 128K: AY-3-8912 (3-channel PSG) |
 | Language | ZX BASIC (Boriel BASIC / `zxbc`) |
 | Output format | `.tap` tape image (also `.tzx`, `.z80`) |
 
@@ -26,7 +26,7 @@ The bird drops under gravity. Tap a key to flap. Navigate through gaps in the pi
 Faithful ZX Spectrum adaptation of the Flappy Bird mechanic:
 
 - **Bird** — character-cell sprite using a UDG (user-defined graphic), subject to gravity.
-- **Pipes** — pairs of block-graphic columns scrolling right-to-left at a fixed speed.
+- **Pipes** — 2-column-wide block-graphic pairs scrolling right-to-left at a fixed speed.
 - **Gap** — random vertical gap, same height every pair, constant width.
 - **Score** — increments each time a pipe pair is cleared; displayed in the border area.
 - **Collision** — detected when the bird occupies the same cell as a pipe or the floor/ceiling.
@@ -96,7 +96,7 @@ make tests
 ### Run the unified suite (recommended)
 
 ```sh
-make run-test-suite    # menu: press 1/2/3 to select, any key to return to menu
+make run-test-suite    # menu: press 1/2/3/4 to select, any key to return to menu
 ```
 
 ### Run a standalone test
@@ -105,6 +105,7 @@ make run-test-suite    # menu: press 1/2/3 to select, any key to return to menu
 make run-test-bird-udg        # automated — verifies UDG byte values via PEEK
 make run-test-title-render    # semi-automated — renders title, then checks screen attributes
 make run-test-physics         # automated — gravity, flap, velocity clamp, floor clamp
+make run-test-pipes           # automated — pipe init state, gap bounds, spawn state
 ```
 
 ### Test catalogue
@@ -115,6 +116,7 @@ make run-test-physics         # automated — gravity, flap, velocity clamp, flo
 | `run-test-bird-udg` | `tests/test_bird_udg.bas` | Fully automated | Calls `LoadBirdUDG()`, PEEKs all 8 UDG bytes, compares against expected pixel map |
 | `run-test-title-render` | `tests/test_title_render.bas` | Semi-automated (press SPACE once) | Renders the title screen, snapshots 6 attribute cells **before** `CLS`, then asserts ink/paper/bright/flash |
 | `run-test-physics` | `tests/test_physics.bas` | Fully automated | Init state, gravity fall, flap impulse, velocity clamp (≤3), floor clamp (≤22) |
+| `run-test-pipes` | `tests/test_pipes.bas` | Fully automated | Pipe init state, gap bounds (2–15), spawn column and active flag |
 
 ### Writing a new test
 
@@ -140,8 +142,9 @@ FlappySpeccy/
 ├── src/
 │   ├── game/
 │   │   ├── main.bas            ← Entry point: init → title → game loop
-│   │   ├── game.bas            ← RunGame() — 50 Hz loop, input, erase/draw, death flash
-│   │   └── physics.bas         ← InitPhysics() / UpdatePhysics() — gravity + flap
+│   │   ├── game.bas            ← RunGame() — 50 Hz loop, 25 Hz physics tick, pipes, death flash
+│   │   ├── physics.bas         ← InitPhysics() / UpdatePhysics() — gravity + flap
+│   │   └── pipes.bas           ← InitPipes() / UpdatePipes() — 2-wide scrolling pipe columns
 │   └── screens/
 │       └── title.bas           ← ShowTitle() — splash screen with UDG bird and "PRESS SPACE"
 │
@@ -161,10 +164,11 @@ FlappySpeccy/
 │
 └── tests/
     ├── assert_helpers.bas       ← Shared AssertEq/GT/LTE/Attr + passed/failed counters
-    ├── test_suite.bas           ← Menu-driven unified runner (press 1/2/3)
+    ├── test_suite.bas           ← Menu-driven unified runner (press 1/2/3/4)
     ├── test_bird_udg.bas        ← UDG memory integrity test (fully automated)
     ├── test_title_render.bas    ← Screen attribute test (semi-automated)
-    └── test_physics.bas         ← Physics unit test (fully automated)
+    ├── test_physics.bas         ← Physics unit test (fully automated)
+    └── test_pipes.bas           ← Pipe init/spawn state test (fully automated)
 ```
 
 Full architecture details → [ARCHITECTURE.md](ARCHITECTURE.md)
@@ -215,6 +219,6 @@ Full architecture details → [ARCHITECTURE.md](ARCHITECTURE.md)
 **Key learnings from prior art:**
 - Both 48K ports are freeware and deliberately minimal — FlappySpeccy has room to differentiate with a proper attract mode, polish, and sound.
 - The Next port uses **UDGeed** (by David Saphier / emook) to convert sprites — a useful tool reference for future UDG work.
-- Sound on 48K = BEEP only. AY/AYFX is 128K-only; not relevant to this project's 48K target.
+- Sound on 48K = BEEP only. AY/AYFX is 128K-only — relevant to Phase 10 (128K build).
 - Border colour change on death is used in the 128K port — a zero-cost polish win available on 48K too.
 - In-session high score is the realistic scope for 48K (no SD card, no guaranteed storage).
