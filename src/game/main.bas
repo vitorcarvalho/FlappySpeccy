@@ -82,9 +82,28 @@ ShowTitle(highScore)
 
 CLS
 
+' ── Bird flock (top) ──────────────────────────────────────────────────────
+' Scattered birds above the text to suggest flight in progress.
+' CHR$(144) = UDG "A" (peacock silhouette loaded by LoadBirdUDG).
+PRINT INK 6; BRIGHT 1; PAPER 0; AT 2,  2; CHR$(144)
+PRINT INK 5; BRIGHT 0; PAPER 0; AT 1, 12; CHR$(144)
+PRINT INK 6; BRIGHT 1; PAPER 0; AT 3, 20; CHR$(144); CHR$(144)
+PRINT INK 5; BRIGHT 0; PAPER 0; AT 2, 28; CHR$(144)
+PRINT INK 6; BRIGHT 1; PAPER 0; AT 5,  7; CHR$(144)
+PRINT INK 5; BRIGHT 0; PAPER 0; AT 4, 25; CHR$(144)
+
+' ── Main message ──────────────────────────────────────────────────────────
 PRINT INK 6; BRIGHT 1; PAPER 0; AT 10, 8; "COMING SOON!"
 PRINT INK 7; BRIGHT 0; PAPER 0; AT 12, 5; "GAME LOOP NOT YET BUILT"
 PRINT INK 5; BRIGHT 0; PAPER 0; AT 14, 5; "SEE NEXT_STEPS.MD  PH.3"
+
+' ── Bird flock (bottom) ───────────────────────────────────────────────────
+' Mirror flock below the text — implies the birds are flying past.
+PRINT INK 5; BRIGHT 0; PAPER 0; AT 18,  4; CHR$(144)
+PRINT INK 6; BRIGHT 1; PAPER 0; AT 19, 14; CHR$(144); CHR$(144)
+PRINT INK 5; BRIGHT 0; PAPER 0; AT 17, 24; CHR$(144)
+PRINT INK 6; BRIGHT 1; PAPER 0; AT 20, 29; CHR$(144)
+PRINT INK 5; BRIGHT 0; PAPER 0; AT 21,  9; CHR$(144)
 
 ' PAUSE 0 suspends the program until any key is pressed.
 ' When the key is pressed, the program exits back to the BASIC prompt.
