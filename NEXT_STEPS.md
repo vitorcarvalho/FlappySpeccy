@@ -176,58 +176,6 @@ Status: **Phase 8 complete. Dynamic speed scaling + border-tier indicator live. 
 
 ---
 
-## Mute / Unmute ✅ DONE
-
-**Goal:** Let the player silence all sound effects without restarting; default to muted so first launch is quiet.
-
-- [x] `assets/sounds/sounds.bas` — `DIM soundMuted AS INTEGER : soundMuted = 1` (global, muted by default).
-  Each SUB checks the flag: `SoundFlap`/`SoundScore` skip `BEEP` when `soundMuted = 1`.
-  `SoundDie` falls back to `PAUSE 25` (~0.5 s) when muted so the death-flash timing is preserved.
-- [x] `src/screens/title.bas` — **M key** toggles mute on the title/start screen (row 21, col 12).
-  Colour-coded: INK 3 (magenta) `M=MUTE  ` when muted, INK 4 (green) `M=UNMUTE` when on.
-  Toggle: `soundMuted = 1 - soundMuted`; row redrawn in-place, no full CLS.
-  `src/game/launcher.bas` reverted to 2-option menu — mute control belongs on the title screen.
-- [x] `tests/test_sound.bas` — 4 new assertions (total: 7):
-  - Test 4: `soundMuted` defaults to 1.
-  - Test 5: toggle 1 → 0 (unmute).
-  - Test 6: toggle 0 → 1 (re-mute).
-  - Test 7: `SoundFlap()` callable and returns when unmuted (you hear one chirp).
-- [x] `tests/test_suite.bas` — option 7 label updated to **7 SOUND+MUTE (auto)**.
-
----
-
-## Phase 11 — ZX Spectrum 128K Support
-
-**Goal:** leverage the AY-3-8912 sound chip and distribute a dedicated 128K build alongside the 48K release. The 48K TAP must remain fully functional and unmodified.
-
-- [ ] **AY sound module** — create `assets/sounds/sounds.bas`:
-  - Gate all implementations behind `#ifdef AY_SOUND`.
-  - 48K path: `BEEP`-based stubs (already planned in Phase 7).
-  - 128K path: AY register writes via `OUT` to ports `0xFFFD` (register select) and `0xBFFD` (register data).
-  - Expose the same SUB signatures in both paths — `SoundFlap()`, `SoundDie()`, `SoundScore()` — so call sites in `game.bas` are build-flag agnostic.
-
-- [ ] **Conditional compilation** — add `-D AY_SOUND` flag to the 128K build only:
-  ```sh
-  zxbc src/game/main.bas -f tap -B -a --optimize 2 --arch zx48k -D AY_SOUND -o build/flappy_speccy_128.tap
-  ```
-  No runtime `IF` checks — the flag resolves at compile time via `#ifdef`.
-
-- [ ] **Makefile targets** — extend `tools/Makefile`:
-  - `make build-128k` — compiles the 128K TAP with `-D AY_SOUND`.
-  - `make run-128k` — launches ZEsarUX with `--machine 128k` and the 128K TAP.
-  - `make dist` — copies both `flappy_speccy.tap` (48K) and `flappy_speccy_128.tap` (128K) to `dist/`.
-
-- [ ] **AY timing** — AY register writes must complete outside the tight game loop to avoid frame-rate impact. Use a dedicated sound-update SUB called once per physics tick (25 Hz), not per render frame.
-
-- [ ] **Verify compatibility**:
-  - 48K TAP: loads and runs on 48K hardware and in 128K → 48 BASIC mode.
-  - 128K TAP: loads and runs in 128K mode with AY audio active.
-  - Both verified in ZEsarUX (`--machine 48k` and `--machine 128k`).
-
-- [ ] **Update `dist/` manifest** — document which TAP targets which hardware in `docs/references.md`.
-
----
-
 ## Boundary Bars (Ceiling & Floor) ✅ DONE
 
 **Goal:** Make the play-area limits visually obvious so the bird cannot appear to fly off-screen.
@@ -248,7 +196,62 @@ Status: **Phase 8 complete. Dynamic speed scaling + border-tier indicator live. 
 
 ---
 
-## Phase 10 — Packaging
+## Mute / Unmute ✅ DONE
+
+**Goal:** Let the player silence all sound effects without restarting; default to muted so first launch is quiet.
+
+- [x] `assets/sounds/sounds.bas` — `DIM soundMuted AS INTEGER : soundMuted = 1` (global, muted by default).
+  Each SUB checks the flag: `SoundFlap`/`SoundScore` skip `BEEP` when `soundMuted = 1`.
+  `SoundDie` falls back to `PAUSE 25` (~0.5 s) when muted so the death-flash timing is preserved.
+- [x] `src/screens/title.bas` — **M key** toggles mute on the title/start screen (row 21, col 12).
+  Colour-coded: INK 3 (magenta) `M=MUTE  ` when muted, INK 4 (green) `M=UNMUTE` when on.
+  Toggle: `soundMuted = 1 - soundMuted`; row redrawn in-place, no full CLS.
+  `src/game/launcher.bas` reverted to 2-option menu — mute control belongs on the title screen.
+- [x] `tests/test_sound.bas` — 4 new assertions (total: 7):
+  - Test 4: `soundMuted` defaults to 1.
+  - Test 5: toggle 1 → 0 (unmute).
+  - Test 6: toggle 0 → 1 (re-mute).
+  - Test 7: `SoundFlap()` callable and returns when unmuted (you hear one chirp).
+- [x] `tests/test_suite.bas` — option 7 label updated to **7 SOUND+MUTE (auto)**.
+
+---
+
+## Phase 10 — ZX Spectrum 128K Support ✅ DONE
+
+**Goal:** leverage the AY-3-8912 sound chip and distribute a dedicated 128K build alongside the 48K release. The 48K TAP must remain fully functional and unmodified.
+
+- [x] **AY sound module** — `assets/sounds/sounds.bas` updated with dual path:
+  - `#ifdef AY_SOUND` block: `OUT 65533`/`OUT 49149` writes to AY registers 0/1/7/8 (Channel A tone period, mixer, volume).
+  - `#ifndef AY_SOUND` block: existing `BEEP`-based stubs (48K path — unchanged).
+  - Same SUB signatures in both paths (`SoundFlap()`, `SoundDie()`, `SoundScore()`) — call sites in `game.bas` are build-flag agnostic.
+  - `SoundDie` 128K: period starts at 126 (A5) and multiplies by 1189/1000 per step × 12 steps ≈ 0.48 s (matches 48K timing).
+
+- [x] **Conditional compilation** — `-D AY_SOUND` flag added to 128K build only:
+  ```sh
+  zxbc src/game/main.bas -f tap -B -a --optimize 2 --arch zx48k -D AY_SOUND -o build/flappy_speccy_128.tap
+  ```
+  No runtime `IF` checks — the flag resolves at compile time via `#ifdef`/`#ifndef`.
+
+- [x] **Makefile targets** — `tools/Makefile` extended:
+  - `make build-128k` — compiles the 128K game TAP with `-D AY_SOUND`.
+  - `make run-128k` — launches ZEsarUX with `--machine 128k` and the 128K TAP.
+  - `make build-launcher-128k` / `make run-launcher-128k` — 128K launcher variants.
+  - `make run-test-sound-128k` — compiles `tests/test_sound_128.bas` with `-D AY_SOUND`; runs on `--machine 128k`.
+  - `make dist` — copies both `flappy_speccy.tap` (48K) and `flappy_speccy_128.tap` (128K) to `dist/`.
+
+- [x] **AY timing** — all AY register writes are discrete PAUSE-separated steps outside the game loop; each sound SUB completes before returning to the caller (same contract as BEEP). The `SoundFlap`/`SoundScore` SUBs remain ≤ 6 PAUSE frames (~120 ms); only `SoundDie` is intentionally long (~0.48 s, after collision).
+
+- [x] **Verify compatibility** — both builds compiled cleanly with zero errors:
+  - 48K TAP: `make build` passes. 48K BEEP path unchanged.
+  - 128K TAP: `make build-128k` passes. AY OUT writes are harmless no-ops on 48K hardware.
+
+- [x] **Test** — `tests/test_sound_128.bas` (standalone, compiled with `-D AY_SOUND`): 7 assertions matching `test_sound.bas` — 3 callability smoke tests + 4 mute-flag assertions. Not in `test_suite` (requires separate compile flag).
+
+- [ ] **`docs/references.md`** — TAP manifest deferred to Phase 11 (Packaging).
+
+---
+
+## Phase 11 — Packaging
 
 - [ ] Build final `.tap` and `.tzx` tape images into `dist/`.
 - [ ] Verify on real hardware (or ZXSpin for Windows) if possible.
@@ -267,7 +270,8 @@ Status: **Phase 8 complete. Dynamic speed scaling + border-tier indicator live. 
 | Pipe spawning | `tests/test_pipes.bas` | ✅ done | Fully automated; init state, gap bounds, spawn assertions |
 | Collision accuracy | `tests/test_collision.bas` | ✅ done | Automated: safe/floor/POKE-green/POKE-clear — 4 assertions |
 | Medal ranks | `tests/test_gameover.bas` | ✅ done | Automated: boundary values 0/9/10/20/30/40/50 — 7 assertions |
-| Sound + mute | `tests/test_sound.bas` | ✅ done | Automated: 3 smoke + 4 mute-flag assertions (default, toggle, audible) — 7 total |
+| Sound + mute (48K) | `tests/test_sound.bas` | ✅ done | Automated: 3 smoke + 4 mute-flag assertions — 7 total |
+| AY sound (128K) | `tests/test_sound_128.bas` | ✅ done | Standalone only (-D AY_SOUND); 3 AY smoke + 4 mute-flag — 7 assertions; run with `make run-test-sound-128k` |
 | Difficulty curve | `tests/test_difficulty_curve.bas` | ✅ done | Automated: `GetSpeedTier` + `GetBorderColor` boundary values — 19 assertions |
 | Full play-through | Manual | 🔜 planned | Load release `.tap`, play to score ≥ 10 |
 
@@ -286,8 +290,12 @@ make run-test-physics          # run physics test standalone
 make run-test-pipes            # run pipe spawn/state test standalone
 make run-test-collision        # run collision detection test standalone
 make run-test-gameover         # run medal rank test standalone
-make run-test-sound            # run sound smoke test standalone
+make run-test-sound            # run sound smoke test standalone (48K BEEP)
 make run-test-difficulty-curve # run difficulty curve (speed/border) unit tests standalone
+make build-128k                # compile 128K TAP with AY sound (-D AY_SOUND)
+make run-128k                  # launch 128K build on --machine 128k
+make run-test-sound-128k       # run AY sound smoke test (--machine 128k)
+make dist                      # copy both 48K and 128K TAPs to dist/
 make clean                     # remove build artefacts
 zxbc src/game/main.bas -h      # compiler help
 ```

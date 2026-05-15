@@ -78,10 +78,14 @@ make          # produces build/flappy_speccy.tap
 ### 3. Run
 
 ```sh
-make run      # compiles (if needed) then launches ZEsarUX with the tape
+make run           # compiles (if needed) then launches ZEsarUX with the 48K tape
+make build-128k    # compile 128K build (AY-3-8912 sound, -D AY_SOUND)
+make run-128k      # launch 128K build in ZEsarUX --machine 128k
 ```
 
-The emulator opens in 48K mode with the tape pre-loaded. Type `LOAD ""` and press **Enter** if it doesn't start automatically. The splash screen appears; press **SPACE** to advance.
+The emulator opens with the tape pre-loaded. Type `LOAD ""` and press **Enter** if it doesn't start automatically. The splash screen appears; press **SPACE** to advance.
+
+**128K note:** the 128K TAP uses `--arch zx48k` with AY `OUT` instructions added via `-D AY_SOUND`. On 48K hardware the `OUT` calls are safe no-ops; on 128K you hear richer AY-3-8912 sound effects.
 
 ---
 
@@ -110,8 +114,9 @@ make run-test-physics         # automated — gravity, flap, velocity clamp, flo
 make run-test-pipes           # automated — pipe init state, gap bounds, spawn state
 make run-test-collision       # automated — safe/floor/pipe-hit/pipe-clear assertions
 make run-test-gameover        # automated — medal rank boundary assertions
-make run-test-sound           # automated — sound + mute (silent by default; 1 chirp at end)
+make run-test-sound           # automated — 48K BEEP sound + mute (silent by default; 1 chirp at end)
 make run-test-difficulty-curve # automated — speed tier + border colour boundary tests
+make run-test-sound-128k      # automated — AY sound smoke test (launches --machine 128k)
 ```
 
 ### Test catalogue
@@ -125,7 +130,8 @@ make run-test-difficulty-curve # automated — speed tier + border colour bounda
 | `run-test-pipes` | `tests/test_pipes.bas` | Fully automated | Pipe init state, gap bounds per difficulty (Easy 2–12, Normal 2–14, Hard 2–16), spawn flag |
 | `run-test-collision` | `tests/test_collision.bas` | Fully automated | Safe position (no hit), floor sentinel (row 22), POKE green attr → hit, restore → no hit |
 | `run-test-gameover` | `tests/test_gameover.bas` | Fully automated | `GetMedalRank`: boundary values 0/9/10/20/30/40/50 → ranks 0/0/1/2/3/4/4 |
-| `run-test-sound` | `tests/test_sound.bas` | Fully automated | 3 smoke tests (silent, muted by default) + 4 mute-flag assertions; you hear 1 chirp at the end |
+| `run-test-sound` | `tests/test_sound.bas` | Fully automated | 3 BEEP smoke tests (silent, muted by default) + 4 mute-flag assertions; 1 chirp at end — 7 total |
+| `run-test-sound-128k` | `tests/test_sound_128.bas` | Fully automated | AY build (`-D AY_SOUND`); 3 AY smoke + 4 mute-flag — 7 assertions; standalone only (not in suite) |
 | `run-test-difficulty-curve` | `tests/test_difficulty_curve.bas` | Fully automated | `GetSpeedTier` (9 boundary asserts) + `GetBorderColor` (10 boundary asserts) |
 
 ### Writing a new test

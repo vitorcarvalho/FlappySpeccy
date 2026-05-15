@@ -10,7 +10,7 @@
 | Attribute grid | 32 × 24, 1 byte/cell | Colour changes per character cell only (not per pixel) |
 | UDGs | 21 slots (A–U, address $FF58) | Bird sprite = 1 UDG (8×8 px); pipe tile = block graphic |
 | Sound | 48K: `BEEP f, d` only | Monophonic; flap + death sounds only |
-| Sound | 128K: AY-3-8912 PSG | 3-channel; music + effects via `OUT` writes (Phase 10) |
+| Sound | 128K: AY-3-8912 PSG | 3-channel; `OUT 65533/49149` register writes; enabled via `-D AY_SOUND` |
 | Frame rate | ~50 Hz (PAL) interrupt | Game loop tied to TV frame interrupt for timing |
 
 ---
@@ -62,7 +62,7 @@
 | `src/game/pipes.bas` | ✅ done | `InitPipes()` / `UpdatePipes()` — 3-slot array, 2-col-wide pipes, difficulty-driven gap (`pipeGapSize` 10/8/6); `pipeScored(3)` tracks awarded points |
 | `src/game/collision.bas` | ✅ done | `CheckCollision()` — floor sentinel (row ≥ 22) + ATTR-based pipe hit (INK 4 = green) |
 | `src/screens/gameover.bas` | ✅ done | `GetMedalRank(score)` (pure, testable) + `ShowGameOver(score)` — medal display, SPACE to retry |
-| `assets/sounds/sounds.bas` | ✅ done | `soundMuted` global (default 1); `SoundFlap()` / `SoundScore()` / `SoundDie()` — all gated on `soundMuted` |
+| `assets/sounds/sounds.bas` | ✅ done | `soundMuted` global (default 1); `SoundFlap()` / `SoundScore()` / `SoundDie()` — gated on `soundMuted`; dual path: BEEP (48K) / AY OUT (128K, `-D AY_SOUND`) |
 | `assets/sprites/pipe_tiles.bas` | 🔜 planned | Block graphic character selection |
 
 ---
@@ -168,7 +168,11 @@ spectrum/
 │       └── sounds.bas          ✅ soundMuted global + SoundFlap/Score/Die — BEEP effects, mute-gated
 │
 ├── build/                      ✅ Compiler output (.tap) — gitignored
+│   ├── flappy_speccy.tap       ✅ 48K build (BEEP sound)
+│   └── flappy_speccy_128.tap   ✅ 128K build (AY-3-8912, -D AY_SOUND)
 ├── dist/                       ✅ Release tape images
+│   ├── flappy_speccy.tap       48K — load in 48K mode or 128K → 48 BASIC
+│   └── flappy_speccy_128.tap   128K — load in 128K mode for AY audio
 ├── tools/
 │   └── Makefile                ✅ Compiler flags, build and test rules
 ├── docs/
@@ -179,7 +183,8 @@ spectrum/
     ├── test_suite.bas          ✅ Menu-driven unified runner (SUITE_MODE compile target)
     ├── test_bird_udg.bas       ✅ UDG memory integrity test (fully automated)
     ├── test_title_render.bas   ✅ Screen attribute test (semi-automated, snapshots before CLS)
-    └── test_physics.bas        ✅ Physics unit test (fully automated)
+    ├── test_physics.bas        ✅ Physics unit test (fully automated)
+    └── test_sound_128.bas      ✅ AY sound smoke test — compiled with -D AY_SOUND (standalone only)
 ```
 
 ---
@@ -190,7 +195,8 @@ spectrum/
 src/**/*.bas
      │
      ▼  zxbc (Boriel ZX BASIC compiler)
-build/flappy_speccy.tap        ← two-block TAP: BASIC loader + machine code
+build/flappy_speccy.tap        ← 48K build: BEEP sound
+build/flappy_speccy_128.tap    ← 128K build: AY-3-8912 sound (-D AY_SOUND)
      │
      ▼  ZEsarUX emulator (or real hardware via tape)
 [running game]
@@ -199,18 +205,25 @@ build/flappy_speccy.tap        ← two-block TAP: BASIC loader + machine code
 Compiler flags (see `tools/Makefile`):
 
 ```sh
+# 48K build (default)
 zxbc src/game/main.bas \
-     -f tap          \   # .TAP output (--tap deprecated since zxbasic 1.16)
-     -B              \   # prepend BASIC loader block
-     -a              \   # autorun loader immediately after load
-     --optimize 2    \   # safe optimisation
-     --arch zx48k    \   # explicit 48K target
+     -f tap --optimize 2 --arch zx48k -B -a \
      -o build/flappy_speccy.tap
+
+# 128K build (AY sound enabled)
+zxbc src/game/main.bas \
+     -f tap --optimize 2 --arch zx48k -B -a \
+     -D AY_SOUND \
+     -o build/flappy_speccy_128.tap
 ```
 
 The `-B -a` flags produce a two-block TAP:
 - Block 1 — `Program: loader` (type `$00`): BASIC stub that autorun calls `RANDOMIZE USR 32768`
 - Block 2 — `Bytes: flappy_spe` (type `$03`): compiled Z80 machine code at address `$8000`
+
+The 128K TAP uses `--arch zx48k` — the memory layout is identical; only the `OUT` instructions
+targeting AY registers `$FFFD`/`$BFFD` differ. On 48K hardware those ports are unresponsive
+(safe no-ops), so the 128K TAP is backward-compatible.
 
 ---
 
