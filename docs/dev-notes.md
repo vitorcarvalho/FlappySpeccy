@@ -235,6 +235,42 @@ RunGame()
 
 The `DrawPipe` and `SpawnPipe` SUBs in `pipes.bas` simply reference `pipeGapSize` — no parameter changes to those functions were needed.
 
+### 9. `AND` is logical, not bitwise — use `BAND` for bit masking
+
+In Boriel ZX BASIC, `AND` / `OR` / `NOT` are **logical** operators. Applied to integers, `AND` returns `0` or `1` (truthy/falsy), not the bitwise result.
+
+```basic
+' ❌ Wrong — AND is logical; (4 AND 7) → 1, not 4
+inkColor = attr AND 7
+IF inkColor = 4 THEN hit = 1   ' never fires when attr = 4 (pipe green)
+
+' ✅ Correct — BAND is bitwise AND
+inkColor = attr BAND 7
+IF inkColor = 4 THEN hit = 1   ' fires correctly
+```
+
+**Bitwise operator names in Boriel BASIC:**
+
+| Operator | Meaning |
+|---|---|
+| `BAND` | Bitwise AND |
+| `BOR` | Bitwise OR |
+| `BXOR` | Bitwise XOR |
+| `BNOT` | Bitwise NOT |
+
+This matters for any attribute byte extraction. The ZX Spectrum attribute byte layout is:
+
+```
+bit 7   6   5   4   3   2   1   0
+      FLASH  BRIGHT  PAPER(2:0)  INK(2:0)
+```
+
+To extract INK (lower 3 bits): `inkColor = attr BAND 7`
+To extract PAPER (bits 3–5):   `paper = (attr BAND 56) / 8`  (or `BSHIFT` if available)
+To test BRIGHT (bit 6):         `bright = (attr BAND 64) BAND 64`
+
+**Symptom of the bug:** collision detection always returned 0 even when a pipe was present at the bird's cell. The test `pipe hit: green attr → collision` failed with `exp=1 got=0`. The POKE'd attribute was 4 but `4 AND 7 = 1` (logical), so `inkColor = 1 ≠ 4`.
+
 ---
 
 ## Prior Art — Flappy Bird on ZX Spectrum

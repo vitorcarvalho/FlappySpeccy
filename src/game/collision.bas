@@ -37,10 +37,11 @@ FUNCTION CheckCollision() AS INTEGER
     hit = 1
   ELSE
     ' Attribute-based pipe detection.
-    ' Extract ink colour (lower 3 bits) into a temp variable to avoid
-    ' compound-expression issues with some Boriel BASIC parser versions.
+    ' Extract ink colour (lower 3 bits).
+    ' Use BAND (bitwise AND) — not AND, which is a logical operator in Boriel
+    ' BASIC and returns 0 or 1 rather than the masked value.
     attr     = PEEK(22528 + birdRow * 32 + birdCol)
-    inkColor = attr AND 7
+    inkColor = attr BAND 7
     IF inkColor = 4 THEN hit = 1
   END IF
 

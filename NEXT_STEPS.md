@@ -101,7 +101,7 @@ Status: **Phase 4b complete. Difficulty selection (1=Easy/2=Normal/3=Hard) live 
   - ATTR-based pipe hit (checked BEFORE drawing the bird to avoid false positives):
     ```basic
     attr     = PEEK(22528 + birdRow * 32 + birdCol)
-    inkColor = attr AND 7
+    inkColor = attr BAND 7   ' BAND = bitwise AND; plain AND is logical in Boriel BASIC
     IF inkColor = 4 THEN hit = 1   ' INK 4 = green = pipe
     ```
 - [x] Integrated `CheckCollision()` into `game.bas` — replaces the old floor-only guard.
