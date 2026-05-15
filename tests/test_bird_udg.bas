@@ -28,13 +28,13 @@ SUB RunTestBirdUDG()
   LoadBirdUDG()
 
   ' ── Assertions ──────────────────────────────────────────────────────────────
-  AssertEq("row 0  feather tips ", 170, PEEK(USR "A" + 0))
-  AssertEq("row 1  feather shaft",  84, PEEK(USR "A" + 1))
-  AssertEq("row 2  fan spread   ", 126, PEEK(USR "A" + 2))
-  AssertEq("row 3  fan base     ",  60, PEEK(USR "A" + 3))
-  AssertEq("row 4  neck         ",  24, PEEK(USR "A" + 4))
-  AssertEq("row 5  body/chest   ",  28, PEEK(USR "A" + 5))
-  AssertEq("row 6  lower body   ",   8, PEEK(USR "A" + 6))
+  AssertEq("row 0  top padding  ",   0, PEEK(USR "A" + 0))
+  AssertEq("row 1  S top K out  ", 247, PEEK(USR "A" + 1))
+  AssertEq("row 2  S left K mid ", 155, PEEK(USR "A" + 2))
+  AssertEq("row 3  S mid K left ", 241, PEEK(USR "A" + 3))
+  AssertEq("row 4  S right K mid",  57, PEEK(USR "A" + 4))
+  AssertEq("row 5  S bot K outer", 245, PEEK(USR "A" + 5))
+  AssertEq("row 6  bot padding  ",   0, PEEK(USR "A" + 6))
   AssertEq("row 7  empty row    ",   0, PEEK(USR "A" + 7))
 
   ' ── Summary ─────────────────────────────────────────────────────────────────

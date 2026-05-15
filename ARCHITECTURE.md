@@ -55,7 +55,7 @@
 |---|---|---|
 | `src/game/main.bas` | ✅ done | Bootstrap: load UDGs → title → `DO/RunGame/LOOP` |
 | `src/screens/title.bas` | ✅ done | `ShowTitle(score)` — splash screen, high score display, "PRESS SPACE" |
-| `assets/sprites/bird_udg.bas` | ✅ done | `LoadBirdUDG()` — POKEs 8 bytes into UDG slot "A" (peacock silhouette) |
+| `assets/sprites/bird_udg.bas` | ✅ done | `LoadBirdUDG()` — POKEs 8 bytes into UDG slot "A" ("SKY" pixel-art glyph) |
 | `src/game/physics.bas` | ✅ done | `InitPhysics()` / `UpdatePhysics(flap%)` — gravity accumulator, velocity clamp, floor/ceiling clamp |
 | `src/game/game.bas` | ✅ done | `RunGame()` — 50 Hz render loop, 25 Hz physics tick, input latch, death flash |
 | `src/game/pipes.bas` | ✅ done | `InitPipes()` / `UpdatePipes()` — 3-slot array, 2-col-wide pipes, 6-row gaps, scroll + spawn |
@@ -101,24 +101,24 @@ END LOOP
 
 ---
 
-## 6. Bird Visual Identity — Peacock
+## 6. Bird Visual Identity — "SKY" glyph
 
-The game character is called the **bird** throughout the code, but its visual representation is a **Peacock** — front-facing, tail fan fully spread, inspired by the NBC peacock logo.
+The game character is called the **bird** throughout the code. Its visual representation is the word **"SKY"** rendered as a pixel-art glyph at 8×8 resolution.
 
-The fan radiates upward from a narrow body/neck at the bottom. The alternating feather tips in row 0 (X_X_X_X_) capture the iconic NBC pinwheel silhouette at 8×8 pixel resolution.
+The 8 columns are split across three letters with no inter-letter gaps: **S** (3px) | **K** (3px) | **Y** (2px). One row of padding sits above and below the 5-row letterform.
 
 ```
-  Row 0:  X_X_X_X_   feather tips (4 tips, alternating)
-  Row 1:  _X_X_X__   feather shafts (converging)
-  Row 2:  _XXXXXX_   full fan spread
-  Row 3:  __XXXX__   fan base narrowing
-  Row 4:  ___XX___   neck
-  Row 5:  ___XXX__   body / chest
-  Row 6:  ____X___   lower body
-  Row 7:  ________   empty
+  Row 0:  ........   top padding
+  Row 1:  ###.#.##   S top,   K outer, Y both arms
+  Row 2:  #..##.##   S left,  K l+mid, Y both arms
+  Row 3:  ###.....#  S mid,   K left,  Y stem
+  Row 4:  ..###..#   S right, K l+mid, Y stem
+  Row 5:  ###.#..#   S bot,   K outer, Y stem
+  Row 6:  ........   bottom padding
+  Row 7:  ........   empty (breathing room)
 ```
 
-**Future improvement:** if a second UDG slot (B) is available, print it immediately to the right to extend the fan width. The colour scheme (cyan/green ink) reinforces the peacock identity — consider `INK 5` (cyan) or `INK 4` (green) when the game palette is finalised.
+**Future improvement:** a second UDG slot (B) could extend the glyph to 16px wide for a larger logo treatment, or revert to a traditional bird silhouette. The yellow ink (`INK 6 BRIGHT 1`) already provides strong contrast against the black background.
 
 ---
 

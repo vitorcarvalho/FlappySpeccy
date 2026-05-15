@@ -225,4 +225,4 @@ Reference implementations to study before designing each new phase.
 - **Attract mode:** the Next port shows a demo after 20 s of title-screen inactivity. Worth adding in Phase 8 — it significantly improves perceived polish.
 - **Border effects:** used in the polished 48K port for visual feedback. Zero-cost: `BORDER n` during death flash or score milestones.
 - **Joystick:** Kempston reads port `$1F`; could be added in Phase 8 alongside SPACE.
-- **UDGeed:** tool by David Saphier (emook) for converting graphics to UDG bytes. Useful if we expand beyond the current 1-UDG peacock sprite.
+- **UDGeed:** tool by David Saphier (emook) for converting graphics to UDG bytes. Useful if we expand beyond the current 1-UDG "SKY" glyph — e.g. a proper bird silhouette or animated sprite.
