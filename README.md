@@ -85,7 +85,7 @@ The emulator opens in 48K mode with the tape pre-loaded. Type `LOAD ""` and pres
 
 ## Unit Tests
 
-Tests live in `tests/` and are standalone `.bas` programs that compile to their own `.tap` files. Each test runs inside the emulator and prints colour-coded `PASS`/`FAIL` lines directly on screen.
+Tests live in `tests/`. All tests share assertion helpers from `tests/assert_helpers.bas` and compile into a single menu-driven TAP via `tests/test_suite.bas`. Each standalone test also compiles to its own `.tap` for targeted debugging.
 
 ### Compile all tests
 
@@ -93,34 +93,45 @@ Tests live in `tests/` and are standalone `.bas` programs that compile to their 
 make tests
 ```
 
-### Run a specific test
+### Run the unified suite (recommended)
+
+```sh
+make run-test-suite    # menu: press 1/2/3 to select, any key to return to menu
+```
+
+### Run a standalone test
 
 ```sh
 make run-test-bird-udg        # automated — verifies UDG byte values via PEEK
 make run-test-title-render    # semi-automated — renders title, then checks screen attributes
+make run-test-physics         # automated — gravity, flap, velocity clamp, floor clamp
 ```
 
 ### Test catalogue
 
 | Target | File | Automation | What it checks |
 |---|---|---|---|
+| `run-test-suite` | `tests/test_suite.bas` | Menu-driven | Unified runner — all tests from one TAP |
 | `run-test-bird-udg` | `tests/test_bird_udg.bas` | Fully automated | Calls `LoadBirdUDG()`, PEEKs all 8 UDG bytes, compares against expected pixel map |
-| `run-test-title-render` | `tests/test_title_render.bas` | Semi-automated (press SPACE once) | Renders the title screen, then PEEKs 6 attribute cells to verify ink/paper/bright/flash |
+| `run-test-title-render` | `tests/test_title_render.bas` | Semi-automated (press SPACE once) | Renders the title screen, snapshots 6 attribute cells **before** `CLS`, then asserts ink/paper/bright/flash |
+| `run-test-physics` | `tests/test_physics.bas` | Fully automated | Init state, gravity fall, flap impulse, velocity clamp (≤3), floor clamp (≤22) |
 
 ### Writing a new test
 
 1. Create `tests/test_<name>.bas`.
-2. `#include` the module under test using a relative path (e.g. `#include "../src/game/mything.bas"`).
-3. Write assertions using `PEEK` for memory checks or attribute-sniffing (`PEEK(22528 + row*32 + col)`) for screen checks.
-4. Print `PASS` in green (`INK 4`) or `FAIL` in red (`INK 2`).
-5. Add a `run-test-<name>` target in `tools/Makefile` and declare it in `.PHONY`.
+2. `#include "assert_helpers.bas"` at the top, then `#include` the module under test.
+3. Wrap all test logic in `SUB RunTest<Name>()`.
+4. Use `AssertEq`, `AssertGT`, `AssertLTE` from `assert_helpers.bas` — they update the shared `passed`/`failed` counters automatically.
+5. End the file with `#ifndef SUITE_MODE / RunTest<Name>() / PAUSE 0 / #endif` so it works both standalone and in the suite.
+6. Add `RunTest<Name>()` + a menu entry to `tests/test_suite.bas`.
+7. Add a `run-test-<name>` target to `tools/Makefile` and declare it in `.PHONY`.
 
 ---
 
 ## Project Structure
 
 ```
-spectrum/
+FlappySpeccy/
 ├── Makefile                    ← Root delegator — run all make targets from here
 ├── README.md                   ← This file
 ├── ARCHITECTURE.md             ← Hardware constraints, component map, memory addresses
@@ -128,9 +139,11 @@ spectrum/
 │
 ├── src/
 │   ├── game/
-│   │   └── main.bas            ← Entry point: init → title → game loop (placeholder)
+│   │   ├── main.bas            ← Entry point: init → title → game loop
+│   │   ├── game.bas            ← RunGame() — 50 Hz loop, input, erase/draw, death flash
+│   │   └── physics.bas         ← InitPhysics() / UpdatePhysics() — gravity + flap
 │   └── screens/
-│       └── title.bas           ← Title/splash screen with UDG bird and "PRESS SPACE"
+│       └── title.bas           ← ShowTitle() — splash screen with UDG bird and "PRESS SPACE"
 │
 ├── assets/
 │   └── sprites/
@@ -143,12 +156,15 @@ spectrum/
 │   └── Makefile                ← Actual build rules and compiler flags
 │
 ├── docs/
-│   ├── dev-notes.md            ← Toolchain decisions, macOS setup, emulator tips
+│   ├── dev-notes.md            ← Toolchain decisions, macOS setup, Boriel gotchas
 │   └── ai-assistance.md        ← Notes on AI-assisted development workflow
 │
 └── tests/
+    ├── assert_helpers.bas       ← Shared AssertEq/GT/LTE/Attr + passed/failed counters
+    ├── test_suite.bas           ← Menu-driven unified runner (press 1/2/3)
     ├── test_bird_udg.bas        ← UDG memory integrity test (fully automated)
-    └── test_title_render.bas   ← Screen attribute test (semi-automated)
+    ├── test_title_render.bas    ← Screen attribute test (semi-automated)
+    └── test_physics.bas         ← Physics unit test (fully automated)
 ```
 
 Full architecture details → [ARCHITECTURE.md](ARCHITECTURE.md)
@@ -180,9 +196,25 @@ Full architecture details → [ARCHITECTURE.md](ARCHITECTURE.md)
 
 ## References
 
+### Toolchain & platform
 - [Boriel ZX BASIC docs](https://zxbasic.readthedocs.io/en/docs/)
 - [ZX Spectrum BASIC Programming (Vickers)](https://worldofspectrum.org/ZXBasicManual/)
 - [ZEsarUX emulator](https://github.com/chernandezba/zesarux)
 - [SkoolKit disassembly toolkit](https://skoolkit.ca/)
 - [ZX Spectrum memory map](https://sinclair.wiki.zxnet.co.uk/wiki/ZX_Spectrum_memory_map)
 - [Flappy Bird — Wikipedia](https://en.wikipedia.org/wiki/Flappy_Bird)
+
+### Prior art — Flappy Bird on ZX Spectrum
+
+| Project | Platform | Author | Year | Notes |
+|---|---|---|---|---|
+| [Flappy Bird ZX](https://spectrumcomputing.co.uk/index.php?cat=96&id=30100) | 48K + 128K | Ralf (Poland) + Aleksandr Rostunov (music) | 2014 | Most polished 48K port; horizontal scrolling, border effects, in-game music (*Kalambur*), TAP + TZX + SCL |
+| [Flappy Bird Simulator](https://spectrumcomputing.co.uk/index.php?cat=96&id=30074) | 48K only | Timmy (Netherlands) | 2014 | Minimal solo implementation; no music; TAP only |
+| [Flappy Bird — ZX Spectrum Next](https://retrobeachman.itch.io/flappybirdzxnext) | ZX Spectrum **Next** only | RetroBeachMan | ~2021 | Written in **NextBASIC** (not Boriel); AYFX sound, SD card high-score save, attract/demo mode, Kempston joystick, 50/60 Hz |
+
+**Key learnings from prior art:**
+- Both 48K ports are freeware and deliberately minimal — FlappySpeccy has room to differentiate with a proper attract mode, polish, and sound.
+- The Next port uses **UDGeed** (by David Saphier / emook) to convert sprites — a useful tool reference for future UDG work.
+- Sound on 48K = BEEP only. AY/AYFX is 128K-only; not relevant to this project's 48K target.
+- Border colour change on death is used in the 128K port — a zero-cost polish win available on 48K too.
+- In-session high score is the realistic scope for 48K (no SD card, no guaranteed storage).

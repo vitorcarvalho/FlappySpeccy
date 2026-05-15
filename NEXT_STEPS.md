@@ -1,6 +1,6 @@
 # Next Steps — Implementation Plan
 
-Status: **POC complete. Splash screen runs. Unit test framework in place.**
+Status: **Phase 3 complete. Bird physics implemented and tested. Unified test suite in place.**
 
 ---
 
@@ -38,25 +38,25 @@ Status: **POC complete. Splash screen runs. Unit test framework in place.**
 
 ## Phase 2b — Unit Tests ✅ DONE
 
-- [x] `tests/test_bird_udg.bas` — fully automated; PEEKs all 8 UDG bytes, green PASS on screen
-- [x] `tests/test_title_render.bas` — semi-automated; renders title then checks 6 attribute cells
-- [x] `make tests` — compiles both test TAPs from repo root
-- [x] `make run-test-bird-udg` / `make run-test-title-render` — launches each test in emulator
+- [x] `tests/assert_helpers.bas` — shared `AssertEq`, `AssertGT`, `AssertLTE`, `AssertAttr` + `passed`/`failed` counters; include-guarded
+- [x] `tests/test_bird_udg.bas` — fully automated; PEEKs all 8 UDG bytes; wrapped in `RunTestBirdUDG()` SUB
+- [x] `tests/test_title_render.bas` — semi-automated; snapshots attributes **before** `CLS` to avoid overwrite; wrapped in `RunTestTitleRender()` SUB
+- [x] `tests/test_physics.bas` — fully automated; 5 assertions (init, gravity, flap, vel clamp, floor clamp); wrapped in `RunTestPhysics()` SUB
+- [x] `tests/test_suite.bas` — menu-driven unified runner; `#define SUITE_MODE` suppresses standalone entry points; press 1/2/3 to run, any key to return to menu
+- [x] `make tests` — compiles all 4 TAPs from repo root
+- [x] `make run-test-suite` / `make run-test-bird-udg` / `make run-test-title-render` / `make run-test-physics`
 
 ---
 
-## Phase 3 — Physics (Gravity + Flap)
+## Phase 3 — Physics (Gravity + Flap) ✅ DONE
 
-**Goal:** bird falls, SPACE makes it rise.
-
-- [ ] Create `src/game/physics.bas`:
-  - `birdRow`, `birdVel` as INTEGER variables.
-  - Each tick: `birdVel = birdVel + 1` (gravity = +1 row/tick).
-  - `birdRow = birdRow + birdVel` (clamped to 1–22).
-  - On SPACE: `birdVel = -3`.
-
-- [ ] Tie loop to a `PAUSE 1` per iteration (~50 ms).
-- [ ] Test: bird should fall naturally, flap on key press.
+- [x] `src/game/physics.bas` — `InitPhysics()`, `UpdatePhysics(flap%)`; global `birdRow`, `birdVel`, `birdCol`
+  - Each tick: `birdVel = birdVel + 1` (gravity); clamped to `[-3, +3]`
+  - `birdRow = birdRow + birdVel`; clamped to `[1, 22]`
+  - On flap: `birdVel = -3`
+- [x] `src/game/game.bas` — `RunGame()` with 50 Hz `PAUSE 1` loop; SPACE = flap, Q = quit; floor hit = red flash then return to title
+- [x] `src/game/main.bas` — updated to `DO / ShowTitle / RunGame / LOOP`
+- [x] Physics verified in emulator — bird falls, flap works, floor clamped
 
 ---
 
@@ -148,9 +148,10 @@ Status: **POC complete. Splash screen runs. Unit test framework in place.**
 
 | Test | File | Status | How |
 |---|---|---|---|
+| Unified suite | `tests/test_suite.bas` | ✅ done | Menu-driven runner; all tests from one TAP |
 | UDG memory integrity | `tests/test_bird_udg.bas` | ✅ done | Fully automated PEEK assertions |
-| Title screen attributes | `tests/test_title_render.bas` | ✅ done | Semi-automated attribute-sniffing |
-| Physics unit test | `tests/test_physics.bas` | 🔜 planned | Standalone `.bas` that prints position each tick |
+| Title screen attributes | `tests/test_title_render.bas` | ✅ done | Semi-automated; attributes snapshot before `CLS` |
+| Physics unit test | `tests/test_physics.bas` | ✅ done | Fully automated; gravity, flap, clamp assertions |
 | Pipe spawning | `tests/test_pipes.bas` | 🔜 planned | Print pipe state each frame to verify spacing |
 | Collision accuracy | `tests/test_collision.bas` | 🔜 planned | Place bird adjacent to known pipe, assert death triggers |
 | Full play-through | Manual | 🔜 planned | Load release `.tap`, play to score ≥ 10 |
@@ -163,8 +164,10 @@ Status: **POC complete. Splash screen runs. Unit test framework in place.**
 make                           # compile game
 make run                       # compile + launch emulator
 make tests                     # compile all test TAPs
-make run-test-bird-udg         # run UDG byte test in emulator
-make run-test-title-render     # run title attribute test in emulator
+make run-test-suite            # run all tests via the menu-driven TAP
+make run-test-bird-udg         # run UDG byte test standalone
+make run-test-title-render     # run title attribute test standalone
+make run-test-physics          # run physics test standalone
 make clean                     # remove build artefacts
 zxbc src/game/main.bas -h      # compiler help
 ```

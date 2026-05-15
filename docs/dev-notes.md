@@ -104,3 +104,102 @@ for this project.
 - **Clean config:** always pass `--noconfigfile` to avoid stale settings from a previous session.
 - **Snapshot:** `File → Save Snapshot` → `.z80` — save emulator state mid-game for debugging.
 - **Debug / ZRCP:** ZEsarUX exposes a remote command protocol (ZRCP) on TCP port 10000; useful for future automated test integration.
+- **Kill before launch:** the Makefile runs `pkill -x zesarux` before every `open` call to guarantee a fresh 48K state; never rely on a running instance.
+
+---
+
+## Boriel ZX BASIC — Lessons Learned
+
+Hard-won gotchas discovered during development. Treat these as project law.
+
+### 1. `DO : statement : LOOP UNTIL` inline form is not supported
+
+```basic
+' ❌ Compiler error: unexpected token 'LOOP'
+DO : PAUSE 1 : LOOP UNTIL INKEY$ <> ""
+
+' ✅ Correct — multi-line only
+DO
+  PAUSE 1
+LOOP UNTIL INKEY$ <> ""
+```
+
+### 2. Include guards prevent double-definition errors
+
+When a module is `#include`d from both a standalone test and `test_suite.bas`, its SUBs and globals would be defined twice without guards — the compiler errors out. Pattern:
+
+```basic
+#ifndef MY_MODULE_BAS
+#define MY_MODULE_BAS
+
+DIM myGlobal AS INTEGER
+
+SUB MyFunction()
+  ' ...
+END SUB
+
+#endif
+```
+
+All source modules (`physics.bas`, `title.bas`, `bird_udg.bas`) and the shared helper (`assert_helpers.bas`) use this pattern.
+
+### 3. `SUITE_MODE` define — suppress standalone entry points
+
+To allow a test file to be both run standalone and included into `test_suite.bas` without double-executing its body:
+
+```basic
+' At the bottom of tests/test_foo.bas:
+#ifndef SUITE_MODE
+RunTestFoo()
+PAUSE 0
+#endif
+```
+
+`test_suite.bas` starts with `#define SUITE_MODE` before any `#include`, so all standalone calls are compiled out.
+
+### 4. Attribute assertions must snapshot before `CLS`
+
+`CLS` with any `PAPER`/`INK` state rewrites **every byte** in the attribute file (`$5800`–`$5AFF`) to the current attribute. If you `CLS` before PEEKing attributes, every assertion reads the post-CLS value instead of what was drawn.
+
+```basic
+' ❌ Wrong — CLS overwrites the attributes we want to test
+ShowTitle(0)
+BORDER 0 : PAPER 0 : INK 7 : CLS   ' attribute file is now all 7s
+AssertAttr("title", 22528 + 2*32 + 9, 70)   ' reads 7, not 70 — FAIL
+
+' ✅ Correct — snapshot first, then clear and report
+ShowTitle(0)
+DIM atTitle AS INTEGER
+atTitle = PEEK(22528 + 2*32 + 9)   ' captured before CLS
+BORDER 0 : PAPER 0 : INK 7 : CLS
+AssertEq("title attr=70", 70, atTitle)   ' compares saved value — PASS
+```
+
+### 5. `W170` unused-function warnings in standalone test builds
+
+The shared `assert_helpers.bas` defines `AssertEq`, `AssertGT`, `AssertLTE`, and `AssertAttr`. A standalone test that only calls two of them will get W170 warnings for the unused helpers. These are harmless — the compiler strips unused SUBs. The unified suite uses all helpers and compiles cleanly.
+
+### 6. INTEGER everywhere — no exceptions in the game loop
+
+Untyped `DIM x` defaults to floating-point, which routes through the ZX ROM FP calculator — 30–100× slower than integer arithmetic on a 3.5 MHz Z80. Every game-loop variable — `birdRow`, `birdVel`, `pipeCol`, `score` — must be `DIM x AS INTEGER`.
+
+---
+
+## Prior Art — Flappy Bird on ZX Spectrum
+
+Reference implementations to study before designing each new phase.
+
+| Project | Target | Language | Year | Notable features |
+|---|---|---|---|---|
+| [Flappy Bird ZX](https://spectrumcomputing.co.uk/index.php?cat=96&id=30100) | 48K + 128K | Machine code (Z80) | 2014 | Horizontal scroll, border effects, in-game music (*Kalambur*), TAP + TZX + SCL, RZX gameplay recording available |
+| [Flappy Bird Simulator](https://spectrumcomputing.co.uk/index.php?cat=96&id=30074) | 48K only | Unknown | 2014 | Minimal one-author implementation; no music; useful as a complexity baseline |
+| [Flappy Bird — ZX Next](https://retrobeachman.itch.io/flappybirdzxnext) | ZX Spectrum **Next** | NextBASIC | ~2021 | AYFX sound engine, SD card high-score persist, attract/demo mode after 20 s idle, Kempston + keyboard simultaneously, 50/60 Hz, UDGs converted with **UDGeed** |
+
+**Design implications for FlappySpeccy:**
+
+- **Sound:** BEEP-only on 48K. AY/AYFX requires 128K. Plan `SoundFlap()` / `SoundDie()` with `BEEP` sequences — see Phase 7.
+- **High score:** no SD card or guaranteed storage on 48K. In-session `hiScore AS INTEGER` is the correct scope; tape-save is a Phase 9 stretch goal.
+- **Attract mode:** the Next port shows a demo after 20 s of title-screen inactivity. Worth adding in Phase 8 — it significantly improves perceived polish.
+- **Border effects:** used in the polished 48K port for visual feedback. Zero-cost: `BORDER n` during death flash or score milestones.
+- **Joystick:** Kempston reads port `$1F`; could be added in Phase 8 alongside SPACE.
+- **UDGeed:** tool by David Saphier (emook) for converting graphics to UDG bytes. Useful if we expand beyond the current 1-UDG peacock sprite.

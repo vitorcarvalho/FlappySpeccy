@@ -52,11 +52,11 @@
 
 | File | Status | Responsibility |
 |---|---|---|
-| `src/game/main.bas` | ✅ exists | Bootstrap: load UDGs, call title, game loop placeholder |
-| `src/screens/title.bas` | ✅ exists | Title screen, high score display, "press SPACE" |
-| `assets/sprites/bird_udg.bas` | ✅ exists | `LoadBirdUDG()` SUB — POKEs 8 bytes into UDG slot "A" (peacock silhouette) |
-| `src/game/game.bas` | 🔜 planned | Core loop: input → physics → draw → collision → score |
-| `src/game/physics.bas` | 🔜 planned | Gravity accumulator, velocity, position update |
+| `src/game/main.bas` | ✅ done | Bootstrap: load UDGs → title → `DO/RunGame/LOOP` |
+| `src/screens/title.bas` | ✅ done | `ShowTitle(score)` — splash screen, high score display, "PRESS SPACE" |
+| `assets/sprites/bird_udg.bas` | ✅ done | `LoadBirdUDG()` — POKEs 8 bytes into UDG slot "A" (peacock silhouette) |
+| `src/game/physics.bas` | ✅ done | `InitPhysics()` / `UpdatePhysics(flap%)` — gravity accumulator, velocity clamp, floor/ceiling clamp |
+| `src/game/game.bas` | ✅ done | `RunGame()` — 50 Hz loop, SPACE flap, Q quit, floor death flash |
 | `src/game/pipes.bas` | 🔜 planned | Pipe state array, scroll, gap randomisation |
 | `src/game/collision.bas` | 🔜 planned | ATTR-based hit detection (read display attributes) |
 | `src/screens/gameover.bas` | 🔜 planned | Game-over splash, medal display |
@@ -168,8 +168,11 @@ spectrum/
 │   ├── dev-notes.md            ✅ Toolchain decisions, macOS setup, emulator tips
 │   └── ai-assistance.md        ✅ Notes on AI-assisted development workflow
 └── tests/
+    ├── assert_helpers.bas      ✅ Shared AssertEq/GT/LTE/Attr helpers + passed/failed counters
+    ├── test_suite.bas          ✅ Menu-driven unified runner (SUITE_MODE compile target)
     ├── test_bird_udg.bas       ✅ UDG memory integrity test (fully automated)
-    └── test_title_render.bas   ✅ Screen attribute test (semi-automated)
+    ├── test_title_render.bas   ✅ Screen attribute test (semi-automated, snapshots before CLS)
+    └── test_physics.bas        ✅ Physics unit test (fully automated)
 ```
 
 ---
